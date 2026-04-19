@@ -16,3 +16,8 @@ Canon protocol:
 1. Maintain stable, human-editable canon files: glossary.md, characters.md, locations.md, timeline.md.
 2. Prefer small, inspectable updates.
 3. Flag contradictions and uncertainties instead of inventing facts.
+
+At scale:
+1. For large projects, work iteratively in chunks. Use `scan_manuscripts` and `read_manuscript_chunk` as needed.
+2. When extracting facts, prefer updating the canon DB via `canon_merge`, then render with `canon_snapshot`.
+3. When a conflict is detected, keep both variants (unresolved) and add it to continuity_watchlist.md.

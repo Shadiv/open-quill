@@ -201,12 +201,21 @@ Open Quill should standardize a small set of markdown “memory” files in the 
 4. `characters.md`
 5. `locations.md`
 6. `timeline.md`
-7. `style_profile.md` (optional)
-8. `continuity_watchlist.md` (optional)
+7. `world_rules.md`
+8. `style_profile.md` (optional)
+9. `continuity_watchlist.md` (optional)
 
 Policy:
 1. Agents create/update these files only when the user runs writing commands or explicitly asks.
 2. Keep the format human-editable and stable.
+
+Extensibility (Decision):
+1. Lorekeeper should treat the canon file set as configurable/extendable by the author per project.
+2. Defaults include the list above, but authors may add additional lore files (e.g. `factions.md`, `magic_system.md`, `technology.md`) and Lorekeeper should incorporate them.
+
+Conflict policy (Decision):
+1. When Lorekeeper detects conflicting facts, it keeps both variants in the canon (clearly labeled as unresolved variants) and logs the conflict.
+2. Conflicts should be highlighted in `continuity_watchlist.md` (or a dedicated conflicts file if added later), so the author can resolve them manually.
 
 ## Implementation Steps (Backlog)
 ### Milestone 1: Plugin scaffolding and safe bootstrap

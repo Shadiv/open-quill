@@ -169,7 +169,7 @@ export const openQuillServer: Plugin = async (ctx, options) => {
         output.context.push(`Open Quill: Project default output language is ${lang}.`) 
       }
       output.context.push(
-        "Open Quill: You are operating in writing mode. Prefer preserving manuscript language and register. Canon/memory files (if present) are project_brief.md, summary.md, glossary.md, characters.md, locations.md, timeline.md, style_profile.md, continuity_watchlist.md.",
+        "Open Quill: You are operating in writing mode. Prefer preserving manuscript language and register. Canon/memory files (if present) are project_brief.md, summary.md, glossary.md, characters.md, locations.md, timeline.md, world_rules.md, style_profile.md, continuity_watchlist.md.",
       )
     },
   }

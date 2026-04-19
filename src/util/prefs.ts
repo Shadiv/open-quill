@@ -1,5 +1,6 @@
 import path from "node:path"
 import { mkdir, writeFile } from "node:fs/promises"
+import { readText } from "./fs.js"
 
 export type ProjectPrefs = {
   languageByWorktree?: Record<string, string>
@@ -8,7 +9,7 @@ export type ProjectPrefs = {
 export async function loadProjectPrefs(stateDir: string): Promise<ProjectPrefs> {
   const p = path.join(stateDir, "prefs.json")
   try {
-    const t = await Bun.file(p).text()
+    const t = await readText(p)
     return JSON.parse(t) as ProjectPrefs
   } catch {
     return {}

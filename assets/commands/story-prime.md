@@ -15,6 +15,7 @@ Create or update these files in the project (ask before editing):
 - locations.md
 - timeline.md
 - glossary.md
+- world_rules.md
 - style_profile.md (optional)
 
 Respond in the user's language (English/Russian). Preserve manuscript language in edits.
