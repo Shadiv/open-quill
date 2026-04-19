@@ -49,8 +49,9 @@ Policy embedded in every agent prompt:
 3. When editing text, preserve the manuscript’s language and register.
 4. If user explicitly requests a different output language, follow it.
 
-Optional later enhancement (not required for v1):
-- A `/writing-lang` command that stores a per-session preference and injects it via compaction hooks.
+Additionally (v1):
+- Add `/writing-lang <lang>` to set a per-project default output language.
+- Default is unset (auto-detect / mirror user language) until the user sets it.
 
 ## Repo Structure (Planned)
 1. `src/`
@@ -63,6 +64,15 @@ Optional later enhancement (not required for v1):
 8. `README.md` (install instructions and usage)
 
 ## Plugin Responsibilities
+### 0. Plugin options (Decision)
+Expose a small, safe options surface (prefer enum + explicit flags over many booleans).
+
+Proposed options (passed via `opencode.json` as `"plugin": [["open-quill", { ... }]]`):
+- `installMode`: `"owned-only" | "if-missing" | "force"` (default: `"owned-only"`)
+- `backup`: `"on-force" | "always" | "never"` (default: `"on-force"`)
+- `exportTools`: `boolean` (default: `false`, future/optional)
+- `defaultLanguage`: `string | undefined` (default: `undefined`)
+
 ### 1. Bootstrap installer
 On plugin init:
 1. Detect global config directory:
@@ -73,11 +83,28 @@ On plugin init:
    - `<config>/agents`
    - `<config>/commands`
 3. Copy templates from `assets/` into those directories, but with safe overwrite rules:
+   - Default `installMode: "owned-only"`.
    - If the target file does not exist: write it.
-   - If it exists and contains an Open Quill ownership header: update it.
-   - If it exists and does not contain ownership header: do not overwrite, log and (if possible) show a toast.
-4. Write/update a plugin-managed manifest file:
+   - If it exists and is Open Quill-owned: update it.
+   - If it exists and is not Open Quill-owned: do not overwrite, log and (if possible) show a toast.
+   - If `installMode: "force"`: overwrite even non-owned files.
+4. Ownership marker (Decision):
+   - Primary: YAML frontmatter `x_openquill` object, e.g. `x_openquill: { managed: true, template: "writer", version: "0.1.0" }`.
+   - Optional fallback: a sentinel comment like `<!-- open-quill:managed -->` as the first line.
+5. Backups (Decision): when overwriting due to owned-update or force mode, obey `backup`:
+   - `on-force`: only create `*.bak` backups when `installMode: "force"` causes overwrites.
+   - `always`: always create `*.bak` before overwriting.
+   - `never`: no backups.
+6. Write/update a plugin-managed manifest file:
    - `<config>/.open-quill/manifest.json` containing installed version and list of files installed.
+
+### 1.1 State tracking (Decision)
+Store plugin state under the global OpenCode config directory:
+- `<config>/.open-quill/`
+
+State includes:
+1. Global plugin state (manifest, installed templates and versions).
+2. Per-project language preference set by `/writing-lang`, keyed by the project worktree path.
 
 ### 2. Register custom tools (runtime)
 Register tools via the plugin `tool` hook (examples):
@@ -85,6 +112,9 @@ Register tools via the plugin `tool` hook (examples):
 2. `continuity_check`
 3. `prose_diff`
 4. `build_style_profile`
+
+Also add a small state tool for `/writing-lang`:
+5. `set_project_language` (sets the per-project default language, keyed by worktree path)
 
 Tool design:
 1. Narrow input schemas with Zod.
@@ -95,6 +125,9 @@ Tool design:
 ### 3. Automation hooks
 1. `experimental.session.compacting`:
    - Inject “carry-forward” context (current writing workflow expectations, pointer to canon/memory files, language policy).
+2. Language preference enforcement:
+   - Inject the per-project language preference (if set) into the system context for the session so all agents follow it.
+   - Ensure compaction preserves the language preference.
 2. Optional v1-lite stale hints:
    - If feasible without unreliable file watchers, provide a command `/refresh-canon` that explicitly recomputes canon rather than trying to auto-detect changes.
    - If we add change detection later, we’ll do it via plugin events and write minimal state files in the user’s config directory, not in project repos.
@@ -131,12 +164,18 @@ Initial set (v1):
 6. `/cowrite-scene`
 7. `/critique-chapter`
 8. `/continuity-check`
+9. `/writing-lang`
 
 Each command:
 1. States inputs expected (files/folders, chapter selection, etc).
 2. References the appropriate agent (frontmatter `agent: writer` etc).
 3. Uses built-in file references (`@path`) and optional shell output injection (`!`backticks) sparingly.
 4. Explicitly calls custom tools by name when structured output is required.
+
+`/writing-lang` specifics (Decision):
+1. Implement as a normal command that triggers a small LLM turn.
+2. The command instructs the agent to call `set_project_language` and confirm the new project default.
+3. Storage is per-project (worktree path), not per-session.
 
 ## Canon / Memory Surface (Recommended Files)
 Open Quill should standardize a small set of markdown “memory” files in the user’s project (created on demand by agents, not by the plugin automatically):
@@ -161,8 +200,15 @@ Policy:
    - config directory detection
    - non-destructive install rules
    - manifest tracking
+   - ownership marker + update behavior
+   - `installMode` and `backup` behavior
 4. Add minimal agent templates: writer, editor, summarizer, lorekeeper.
 5. Add minimal commands: story-prime, summarize-project, edit-selection.
+6. Add `/writing-lang` command + `set_project_language` tool.
+7. Add unit tests for:
+   - template install/update decision logic (owned vs non-owned vs force)
+   - manifest/state read/write
+   - project-language preference keyed by worktree path
 
 Acceptance:
 1. Enabling plugin results in those agents/commands appearing in OpenCode.
@@ -209,6 +255,6 @@ Acceptance:
    - Ensure plugin does not write into project repos by default.
 
 ## Open Questions / Future Enhancements
-1. Add optional `/writing-lang` command and per-session preference storage.
+1. Add per-session override for `/writing-lang` (project default remains the baseline).
 2. Add optional “prefixed naming mode” via plugin options if collisions are common.
 3. Add deeper stale detection (only if reliable across platforms).
