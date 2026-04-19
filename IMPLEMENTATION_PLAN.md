@@ -23,6 +23,10 @@ Ship an OpenCode plugin (installable from npm from this repo) that enables a “
 4. Plugins cannot “register agents/commands” purely in-memory; to make agents/commands appear in UI, they must exist as files in the config directories.
 5. Therefore, this plugin must “bootstrap” (install) agent and command markdown files into the user’s config directory.
 
+Additional constraints / conventions (Decisions):
+1. Prefer enforcing cross-agent session behavior via `experimental.chat.system.transform` (strongest guarantee).
+2. Follow OpenCode’s global config directory conventions on each OS (do not invent new paths).
+
 ## Distribution Model
 1. Publish this package to npm (target name: `open-quill` if available, else `@open-quill/opencode-writing`).
 2. User enables it by adding to `opencode.json`:
@@ -76,9 +80,9 @@ Proposed options (passed via `opencode.json` as `"plugin": [["open-quill", { ...
 ### 1. Bootstrap installer
 On plugin init:
 1. Detect global config directory:
-   - Prefer `$XDG_CONFIG_HOME/opencode`
-   - Else use `~/.config/opencode`
-   - On Windows (non-WSL), fall back to `%APPDATA%/opencode` if present, else `~/.config/opencode`.
+   - Prefer `$XDG_CONFIG_HOME/opencode` when set.
+   - Else use `~/.config/opencode`.
+   - On Windows (native), use OpenCode’s convention: `%USERPROFILE%\.config\opencode`.
 2. Ensure directories exist:
    - `<config>/agents`
    - `<config>/commands`
@@ -116,6 +120,10 @@ Register tools via the plugin `tool` hook (examples):
 Also add a small state tool for `/writing-lang`:
 5. `set_project_language` (sets the per-project default language, keyed by worktree path)
 
+Document parsing support (Decision):
+1. v1 supports `.docx` extraction (best-effort) for scanning and canon/summarization workflows.
+2. PDF/RTF and other formats are explicitly out of scope for v1.
+
 Tool design:
 1. Narrow input schemas with Zod.
 2. Deterministic outputs where possible (JSON strings or structured markdown).
@@ -126,11 +134,19 @@ Tool design:
 1. `experimental.session.compacting`:
    - Inject “carry-forward” context (current writing workflow expectations, pointer to canon/memory files, language policy).
 2. Language preference enforcement:
-   - Inject the per-project language preference (if set) into the system context for the session so all agents follow it.
+   - Standardize on `experimental.chat.system.transform` to inject the per-project language preference (if set) into the system context for the session so all agents follow it.
    - Ensure compaction preserves the language preference.
 2. Optional v1-lite stale hints:
    - If feasible without unreliable file watchers, provide a command `/refresh-canon` that explicitly recomputes canon rather than trying to auto-detect changes.
-   - If we add change detection later, we’ll do it via plugin events and write minimal state files in the user’s config directory, not in project repos.
+    - If we add change detection later, we’ll do it via plugin events and write minimal state files in the user’s config directory, not in project repos.
+
+### 4. User notifications (Decision)
+When templates are installed/updated, attempt:
+1. A user-facing toast (via the SDK TUI API when available).
+2. Always log the outcome (success/skip/collision) for debugging.
+
+### 5. Uninstall behavior (Decision)
+If the plugin is removed from config, installed agents/commands are left in place (non-destructive). Users can delete them manually.
 
 ## Agents (Template Content)
 All agent markdown files include frontmatter:
@@ -252,7 +268,13 @@ Acceptance:
    - Confirm output language matches the user.
 3. Safety:
    - Ensure existing user `writer.md` is not overwritten unless owned by Open Quill.
-   - Ensure plugin does not write into project repos by default.
+    - Ensure plugin does not write into project repos by default.
+
+## Engineering Decisions
+1. Packaging: ESM-only.
+2. Tests: Vitest.
+3. Default scan scope (when no explicit paths are supplied to commands): repo-wide scan with strong ignores.
+4. Default scan file types (v1): `*.md`, `*.mdx`, `*.txt`, `*.docx`.
 
 ## Open Questions / Future Enhancements
 1. Add per-session override for `/writing-lang` (project default remains the baseline).

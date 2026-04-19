@@ -1,0 +1,41 @@
+{
+  "name": "open-quill",
+  "version": "0.1.0",
+  "description": "OpenCode writing plugin: agents, commands, and writing tools",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/open-quill.git"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "assets/"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.1.1",
+    "diff": "^5.2.0",
+    "fast-glob": "^3.3.2",
+    "mammoth": "^1.8.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.21",
+    "@types/diff": "^5.2.0",
+    "@types/node": "^22.10.0",
+    "tsup": "^8.2.4",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}
