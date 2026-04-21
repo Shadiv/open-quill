@@ -22,18 +22,16 @@ type BackupMode = "on-force" | "always" | "never"
 type Options = {
   installMode?: InstallMode
   backup?: BackupMode
-  exportTools?: boolean
   defaultLanguage?: string
 }
 
-function normalizeOptions(options?: PluginOptions): Required<Pick<Options, "installMode" | "backup" | "exportTools">> & {
+function normalizeOptions(options?: PluginOptions): Required<Pick<Options, "installMode" | "backup">> & {
   defaultLanguage?: string
 } {
   const o = (options ?? {}) as Options
   return {
     installMode: o.installMode ?? "owned-only",
     backup: o.backup ?? "on-force",
-    exportTools: o.exportTools ?? false,
     defaultLanguage: o.defaultLanguage,
   }
 }

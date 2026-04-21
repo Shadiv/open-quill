@@ -74,7 +74,6 @@ Expose a small, safe options surface (prefer enum + explicit flags over many boo
 Proposed options (passed via `opencode.json` as `"plugin": [["open-quill", { ... }]]`):
 - `installMode`: `"owned-only" | "if-missing" | "force"` (default: `"owned-only"`)
 - `backup`: `"on-force" | "always" | "never"` (default: `"on-force"`)
-- `exportTools`: `boolean` (default: `false`, future/optional)
 - `defaultLanguage`: `string | undefined` (default: `undefined`)
 
 ### 1. Bootstrap installer
