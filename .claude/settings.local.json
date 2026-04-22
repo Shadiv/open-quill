@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npm run *)",
-      "Bash(npm pack *)"
+      "Bash(npm pack *)",
+      "Bash(git fetch *)"
     ]
   }
 }

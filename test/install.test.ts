@@ -22,8 +22,10 @@ async function installDecision(params: {
   installMode: InstallMode
   backupMode: BackupMode
   version: string
+  /** Version recorded in the manifest for this file (simulates manifest lookup) */
+  manifestVersion?: string
 }): Promise<"installed" | "updated" | "skipped"> {
-  const { destPath, assetContent, installMode, backupMode, version } = params
+  const { destPath, assetContent, installMode, backupMode, version, manifestVersion } = params
   const exists = await fileExists(destPath)
 
   if (!exists) {
@@ -41,6 +43,11 @@ async function installDecision(params: {
   const isForce = installMode === "force"
 
   if (!owned && !isForce) {
+    return "skipped"
+  }
+
+  // Skip if already at current version (no-op on same-version startup)
+  if (owned && manifestVersion === version) {
     return "skipped"
   }
 
@@ -211,5 +218,47 @@ describe("install decision logic", () => {
     })
     const bakExists = await fileExists(`${dest}.bak`)
     expect(bakExists).toBe(false)
+  })
+
+  it("skips owned file when manifest version matches (same-version startup)", async () => {
+    const dir = await tmpDir("version-skip")
+    await mkdir(path.join(dir, "agents"), { recursive: true })
+    const dest = path.join(dir, "agents", "test.md")
+    const content = stampOwnedFrontmatter("---\ndescription: current\n---\nCurrent body.", { version: "1.0.0" })
+    await writeFile(dest, content, "utf8")
+
+    const result = await installDecision({
+      destPath: dest,
+      assetContent: SAMPLE_ASSET,
+      installMode: "owned-only",
+      backupMode: "on-force",
+      version: "1.0.0",
+      manifestVersion: "1.0.0",
+    })
+    expect(result).toBe("skipped")
+    // Content should be unchanged
+    const actual = await readFile(dest, "utf8")
+    expect(actual).toContain("Current body")
+  })
+
+  it("updates owned file when manifest version is older (npm update scenario)", async () => {
+    const dir = await tmpDir("version-update")
+    await mkdir(path.join(dir, "agents"), { recursive: true })
+    const dest = path.join(dir, "agents", "test.md")
+    const content = stampOwnedFrontmatter("---\ndescription: old\n---\nOld body.", { version: "0.1.0" })
+    await writeFile(dest, content, "utf8")
+
+    const result = await installDecision({
+      destPath: dest,
+      assetContent: SAMPLE_ASSET,
+      installMode: "owned-only",
+      backupMode: "on-force",
+      version: "0.2.0",
+      manifestVersion: "0.1.0",
+    })
+    expect(result).toBe("updated")
+    const actual = await readFile(dest, "utf8")
+    expect(actual).toContain("test agent")
+    expect(actual).toContain("0.2.0")
   })
 })

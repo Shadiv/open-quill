@@ -111,6 +111,13 @@ async function installTemplates(params: {
       continue
     }
 
+    // Skip if this file is already at the current version (no-op on same version startup)
+    const existing = manifest.files.find((r) => r.path === t.destPath)
+    if (owned && existing?.version === version) {
+      skipped.push(t.destPath)
+      continue
+    }
+
     // owned update or force overwrite
     await backupFileIfNeeded(t.destPath, options.backup, isForce)
     const raw = await readAssetText(t.assetPath)
