@@ -1,10 +1,16 @@
 import path from "node:path"
-import { readdir } from "node:fs/promises"
+import { existsSync } from "node:fs"
+import { readdir, readFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 
 function assetsRoot(): string {
-  // Works both from src/ and dist/ because util/assets is two levels below package root.
-  return fileURLToPath(new URL("../../assets/", import.meta.url))
+  // Bundled layout: dist/index.js → dist/assets/
+  const bundled = fileURLToPath(new URL("./assets/", import.meta.url))
+  if (existsSync(bundled)) return bundled
+  // Source / dev layout: src/util/assets.ts → <pkg>/assets/
+  const source = fileURLToPath(new URL("../../assets/", import.meta.url))
+  if (existsSync(source)) return source
+  throw new Error("Open Quill: could not locate assets directory")
 }
 
 async function listDirMd(dir: string): Promise<string[]> {
@@ -24,5 +30,5 @@ export async function listAssetFiles(): Promise<string[]> {
 
 export async function readAssetText(assetPath: string): Promise<string> {
   const abs = path.join(assetsRoot(), assetPath)
-  return Bun.file(abs).text()
+  return readFile(abs, "utf8")
 }

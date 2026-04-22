@@ -5,6 +5,16 @@
   "type": "module",
   "license": "MIT",
   "author": "Shadiv",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "writing",
+    "fiction",
+    "editor",
+    "prose",
+    "canon",
+    "russian"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Shadiv/open-quill.git"
@@ -26,13 +36,13 @@
     }
   },
   "files": [
-    "dist/",
-    "assets/"
+    "dist/"
   ],
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:build": "node scripts/smoke.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "npm run build"
   },

@@ -43,6 +43,8 @@ Open Quill is an [OpenCode](https://opencode.ai) plugin that turns your coding a
 
 ## Install
 
+> **Runtime**: Bun, via [opencode](https://opencode.ai). Open Quill uses `Bun.file` and `Bun.env` at runtime, so it runs only inside the opencode host (which is Bun-based) — it is not intended to be imported from a plain Node.js process.
+
 1. Install the plugin:
 
 ```bash
@@ -129,6 +131,8 @@ Open Quill — плагин для [OpenCode](https://opencode.ai), которы
 - `set_project_language` — сохранение языковых предпочтений для проекта.
 
 ## Установка
+
+> **Среда выполнения**: Bun, через [opencode](https://opencode.ai). Open Quill использует `Bun.file` и `Bun.env` во время выполнения, поэтому работает только внутри хоста opencode (основанного на Bun) — импортировать его из обычного Node.js-процесса не предполагается.
 
 1. Установите плагин:
 
