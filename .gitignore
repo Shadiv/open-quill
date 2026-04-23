@@ -1,5 +1,4 @@
 node_modules/
-dist/
 .config/
 .ralph/
 .DS_Store
