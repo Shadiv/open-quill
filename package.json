@@ -40,7 +40,7 @@
   ],
   "scripts": {
     "build": "tsup",
-    "prepare": "tsup",
+    "prepare": "bun run scripts/prepare.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:build": "node scripts/smoke.mjs",

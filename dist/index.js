@@ -1,3 +1,4 @@
+// @bun
 // src/plugin.ts
 import path13 from "path";
 
@@ -33,9 +34,11 @@ import { readdir, readFile as readFile2 } from "fs/promises";
 import { fileURLToPath } from "url";
 function assetsRoot() {
   const bundled = fileURLToPath(new URL("./assets/", import.meta.url));
-  if (existsSync(bundled)) return bundled;
+  if (existsSync(bundled))
+    return bundled;
   const source = fileURLToPath(new URL("../../assets/", import.meta.url));
-  if (existsSync(source)) return source;
+  if (existsSync(source))
+    return source;
   throw new Error("Open Quill: could not locate assets directory");
 }
 async function listDirMd(dir) {
@@ -45,8 +48,10 @@ async function listDirMd(dir) {
 async function listAssetFiles() {
   const root = assetsRoot();
   const out = [];
-  for (const f of await listDirMd(path2.join(root, "agents"))) out.push(`agents/${f}`);
-  for (const f of await listDirMd(path2.join(root, "commands"))) out.push(`commands/${f}`);
+  for (const f of await listDirMd(path2.join(root, "agents")))
+    out.push(`agents/${f}`);
+  for (const f of await listDirMd(path2.join(root, "commands")))
+    out.push(`commands/${f}`);
   return out;
 }
 async function readAssetText(assetPath) {
@@ -59,11 +64,14 @@ import path3 from "path";
 import { mkdir as mkdir2, writeFile as writeFile2 } from "fs/promises";
 function detectConfigRoot() {
   const xdg = Bun.env.XDG_CONFIG_HOME;
-  if (xdg) return path3.join(xdg, "opencode");
+  if (xdg)
+    return path3.join(xdg, "opencode");
   const userProfile = Bun.env.USERPROFILE;
-  if (userProfile) return path3.join(userProfile, ".config", "opencode");
+  if (userProfile)
+    return path3.join(userProfile, ".config", "opencode");
   const home = Bun.env.HOME;
-  if (home) return path3.join(home, ".config", "opencode");
+  if (home)
+    return path3.join(home, ".config", "opencode");
   return path3.resolve(".opencode");
 }
 function getStateDir(configRoot) {
@@ -91,10 +99,14 @@ async function saveManifest(stateDir, manifest) {
 // src/util/ownership.ts
 var SENTINEL = "<!-- open-quill:managed -->";
 function isOwnedByOpenQuill(content) {
-  const head = content.split(/\r?\n/).slice(0, 50).join("\n");
-  if (head.includes(SENTINEL)) return true;
-  if (!head.startsWith("---")) return false;
-  const endIdx = head.indexOf("\n---", 3);
+  const head = content.split(/\r?\n/).slice(0, 50).join(`
+`);
+  if (head.includes(SENTINEL))
+    return true;
+  if (!head.startsWith("---"))
+    return false;
+  const endIdx = head.indexOf(`
+---`, 3);
   const fm = endIdx >= 0 ? head.slice(3, endIdx) : head;
   return /\bx_openquill\s*:/m.test(fm);
 }
@@ -109,17 +121,23 @@ function stampOwnedFrontmatter(content, params) {
       `x_openquill: { managed: true, version: "${params.version}" }`,
       "---",
       ...withSentinel.slice(1)
-    ].join("\n");
+    ].join(`
+`);
   }
   const fmEnd = withSentinel.indexOf("---", 2);
-  if (fmEnd === -1) return withSentinel.join("\n");
+  if (fmEnd === -1)
+    return withSentinel.join(`
+`);
   const fmLines = withSentinel.slice(2, fmEnd);
   const rest = withSentinel.slice(fmEnd);
   const existingIdx = fmLines.findIndex((l) => /^x_openquill\s*:/i.test(l.trim()));
   const stamp = `x_openquill: { managed: true, version: "${params.version}" }`;
-  if (existingIdx >= 0) fmLines[existingIdx] = stamp;
-  else fmLines.push(stamp);
-  return [withSentinel[0], "---", ...fmLines, ...rest].join("\n");
+  if (existingIdx >= 0)
+    fmLines[existingIdx] = stamp;
+  else
+    fmLines.push(stamp);
+  return [withSentinel[0], "---", ...fmLines, ...rest].join(`
+`);
 }
 
 // src/tools/extract_canon.ts
@@ -139,7 +157,7 @@ var DEFAULT_IGNORE_GLOBS = [
   "**/.cache/**"
 ];
 function isProbablyBinary(text) {
-  const nul = text.includes("\0");
+  const nul = text.includes("\x00");
   return nul;
 }
 
@@ -150,22 +168,23 @@ async function readDocxText(filePath) {
 }
 function extractCapitalizedTokens(text) {
   const tokens = text.match(/\b[\p{Lu}][\p{L}\p{M}'-]{2,}\b/gu) ?? [];
-  const stop = /* @__PURE__ */ new Set(["The", "A", "An", "And", "But", "Or", "I", "We", "He", "She", "They", "It", "This", "That", "\u0412\u043E\u0442", "\u042D\u0442\u043E", "\u0418", "\u041D\u043E", "\u0410", "\u041E\u043D", "\u041E\u043D\u0430", "\u041E\u043D\u0438", "\u041C\u044B", "\u042F"]);
+  const stop = new Set(["The", "A", "An", "And", "But", "Or", "I", "We", "He", "She", "They", "It", "This", "That", "\u0412\u043E\u0442", "\u042D\u0442\u043E", "\u0418", "\u041D\u043E", "\u0410", "\u041E\u043D", "\u041E\u043D\u0430", "\u041E\u043D\u0438", "\u041C\u044B", "\u042F"]);
   return Array.from(new Set(tokens.filter((t) => !stop.has(t)))).slice(0, 500);
 }
 var extractCanonTool = tool({
   description: "Scan manuscript files (md/txt/docx) and return structured canon candidates (characters, locations, timeline points, rules, unresolved threads).",
   args: {
     paths: tool.schema.array(tool.schema.string()).optional().describe("File or directory paths. If omitted, scan the worktree."),
-    maxFiles: tool.schema.number().int().min(1).max(5e3).optional().describe("Maximum files to scan (default 500).")
+    maxFiles: tool.schema.number().int().min(1).max(5000).optional().describe("Maximum files to scan (default 500).")
   },
   async execute(args, context) {
     const maxFiles = args.maxFiles ?? 500;
-    const roots = (args.paths?.length ? args.paths : [context.worktree]).map((p) => path4.isAbsolute(p) ? p : path4.join(context.directory, p));
+    const roots = ((args.paths?.length) ? args.paths : [context.worktree]).map((p) => path4.isAbsolute(p) ? p : path4.join(context.directory, p));
     const patterns = [];
     for (const r of roots) {
       const statExists = await fileExists(r);
-      if (!statExists) continue;
+      if (!statExists)
+        continue;
       const ext = path4.extname(r).toLowerCase();
       if ([".md", ".mdx", ".txt", ".docx"].includes(ext)) {
         patterns.push(r);
@@ -186,7 +205,8 @@ var extractCanonTool = tool({
 ` + await readDocxText(f);
         } else {
           const t = await readText(f);
-          if (isProbablyBinary(t)) continue;
+          if (isProbablyBinary(t))
+            continue;
           corpus += `
 
 # FILE: ${path4.relative(context.worktree, f)}
@@ -195,7 +215,7 @@ var extractCanonTool = tool({
       } catch (e) {
         notes.push(`Failed to read ${path4.relative(context.worktree, f)}: ${e.message}`);
       }
-      if (corpus.length > 2e6) {
+      if (corpus.length > 2000000) {
         notes.push("Corpus truncated to ~2MB for tool output.");
         break;
       }
@@ -232,13 +252,17 @@ var proseDiffTool = tool2({
     let removed = 0;
     for (const p of parts) {
       const lines = p.value.split(/\r?\n/).length - 1;
-      if (p.added) added += lines;
-      if (p.removed) removed += lines;
+      if (p.added)
+        added += lines;
+      if (p.removed)
+        removed += lines;
     }
     const snippet = parts.slice(0, 200).map((p) => {
       const prefix = p.added ? "+" : p.removed ? "-" : " ";
-      return p.value.split(/\r?\n/).slice(0, 50).map((l) => `${prefix}${l}`).join("\n");
-    }).join("\n");
+      return p.value.split(/\r?\n/).slice(0, 50).map((l) => `${prefix}${l}`).join(`
+`);
+    }).join(`
+`);
     return [
       `## Prose Diff Summary`,
       `- Lines added: ${added}`,
@@ -247,7 +271,8 @@ var proseDiffTool = tool2({
       "```diff",
       snippet.trimEnd(),
       "```"
-    ].join("\n");
+    ].join(`
+`);
   }
 });
 
@@ -262,11 +287,7 @@ var continuityCheckTool = tool3({
   async execute(args) {
     const issues = [];
     if (args.canon) {
-      const canonNames = Array.from(
-        new Set(
-          (args.canon.match(/\b[\p{Lu}][\p{L}\p{M}'-]{2,}\b/gu) ?? []).slice(0, 200)
-        )
-      );
+      const canonNames = Array.from(new Set((args.canon.match(/\b[\p{Lu}][\p{L}\p{M}'-]{2,}\b/gu) ?? []).slice(0, 200)));
       const missing = canonNames.filter((n) => !args.chapter.includes(n)).slice(0, 25);
       if (missing.length) {
         issues.push(`Canon mentions names not seen in chapter (may be ok): ${missing.join(", ")}`);
@@ -280,13 +301,14 @@ var continuityCheckTool = tool3({
       ...issues.length ? issues.map((i) => `- ${i}`) : ["- No obvious issues found by heuristics."],
       "",
       "Notes: This tool is intentionally conservative and heuristic-based. Use the critic agent for deeper analysis."
-    ].join("\n");
+    ].join(`
+`);
   }
 });
 
 // src/tools/build_style_profile.ts
 import { tool as tool4 } from "@opencode-ai/plugin";
-var EN_STOPWORDS = /* @__PURE__ */ new Set([
+var EN_STOPWORDS = new Set([
   "a",
   "an",
   "the",
@@ -423,7 +445,7 @@ var EN_STOPWORDS = /* @__PURE__ */ new Set([
   "haven",
   "hadn"
 ]);
-var RU_STOPWORDS = /* @__PURE__ */ new Set([
+var RU_STOPWORDS = new Set([
   "\u0438",
   "\u0432",
   "\u043D\u0430",
@@ -544,7 +566,7 @@ var RU_STOPWORDS = /* @__PURE__ */ new Set([
   "\u043D\u0435\u0451"
 ]);
 function splitSentences(text) {
-  return text.split(/(?<=[.!?…»""\u0021\u003F])\s+/).map((s) => s.trim()).filter((s) => s.length > 0);
+  return text.split(/(?<=[.!?\u2026\u00BB""\u0021\u003F])\s+/).map((s) => s.trim()).filter((s) => s.length > 0);
 }
 function splitParagraphs(text) {
   return text.split(/\n\s*\n/).map((p) => p.trim()).filter((p) => p.length > 0);
@@ -555,19 +577,23 @@ function tokenizeWords(text) {
 }
 function isDialogueLine(line) {
   const trimmed = line.trim();
-  if (/^[—–]\s/.test(trimmed) || /^-\s/.test(trimmed)) return true;
-  if (/["«]/.test(trimmed) && /["»]/.test(trimmed)) return true;
-  if (/["\u201C]/.test(trimmed) && /["\u201D]/.test(trimmed)) return true;
+  if (/^[\u2014\u2013]\s/.test(trimmed) || /^-\s/.test(trimmed))
+    return true;
+  if (/["\u00AB]/.test(trimmed) && /["\u00BB]/.test(trimmed))
+    return true;
+  if (/["\u201C]/.test(trimmed) && /["\u201D]/.test(trimmed))
+    return true;
   return false;
 }
 function computeDialogueRatio(text) {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-  if (lines.length === 0) return 0;
+  if (lines.length === 0)
+    return 0;
   const dialogueLines = lines.filter(isDialogueLine).length;
   return dialogueLines / lines.length;
 }
 function detectPOV(words) {
-  const first = /* @__PURE__ */ new Set([
+  const first = new Set([
     "i",
     "me",
     "my",
@@ -587,7 +613,7 @@ function detectPOV(words) {
     "\u043D\u0430\u0441",
     "\u043D\u0430\u0448"
   ]);
-  const third = /* @__PURE__ */ new Set([
+  const third = new Set([
     "he",
     "she",
     "him",
@@ -609,16 +635,21 @@ function detectPOV(words) {
   let firstCount = 0;
   let thirdCount = 0;
   for (const w of words) {
-    if (first.has(w)) firstCount++;
-    if (third.has(w)) thirdCount++;
+    if (first.has(w))
+      firstCount++;
+    if (third.has(w))
+      thirdCount++;
   }
-  if (firstCount === 0 && thirdCount === 0) return "indeterminate";
-  if (firstCount > thirdCount * 1.5) return "first-person";
-  if (thirdCount > firstCount * 1.5) return "third-person";
+  if (firstCount === 0 && thirdCount === 0)
+    return "indeterminate";
+  if (firstCount > thirdCount * 1.5)
+    return "first-person";
+  if (thirdCount > firstCount * 1.5)
+    return "third-person";
   return "mixed";
 }
 function detectTense(words) {
-  const pastMarkers = /* @__PURE__ */ new Set([
+  const pastMarkers = new Set([
     "was",
     "were",
     "had",
@@ -655,7 +686,7 @@ function detectTense(words) {
     "\u0443\u0448\u0451\u043B",
     "\u0443\u0448\u043B\u0430"
   ]);
-  const presentMarkers = /* @__PURE__ */ new Set([
+  const presentMarkers = new Set([
     "is",
     "are",
     "am",
@@ -687,32 +718,43 @@ function detectTense(words) {
   let pastCount = 0;
   let presentCount = 0;
   for (const w of words) {
-    if (pastMarkers.has(w)) pastCount++;
-    if (presentMarkers.has(w)) presentCount++;
+    if (pastMarkers.has(w))
+      pastCount++;
+    if (presentMarkers.has(w))
+      presentCount++;
   }
   for (const w of words) {
-    if (w.length > 3 && w.endsWith("ed") && !presentMarkers.has(w)) pastCount++;
+    if (w.length > 3 && w.endsWith("ed") && !presentMarkers.has(w))
+      pastCount++;
   }
-  if (pastCount === 0 && presentCount === 0) return "indeterminate";
-  if (pastCount > presentCount * 1.5) return "past";
-  if (presentCount > pastCount * 1.5) return "present";
+  if (pastCount === 0 && presentCount === 0)
+    return "indeterminate";
+  if (pastCount > presentCount * 1.5)
+    return "past";
+  if (presentCount > pastCount * 1.5)
+    return "present";
   return "mixed";
 }
 function classifySentenceLength(avg) {
-  if (avg < 10) return "short";
-  if (avg < 20) return "medium";
+  if (avg < 10)
+    return "short";
+  if (avg < 20)
+    return "medium";
   return "long";
 }
 function classifyParagraphDensity(avgSentencesPerParagraph) {
-  if (avgSentencesPerParagraph <= 2) return "airy";
-  if (avgSentencesPerParagraph <= 5) return "moderate";
+  if (avgSentencesPerParagraph <= 2)
+    return "airy";
+  if (avgSentencesPerParagraph <= 5)
+    return "moderate";
   return "dense";
 }
 function getTopWords(words, n) {
   const isStopword = (w) => EN_STOPWORDS.has(w) || RU_STOPWORDS.has(w);
-  const freq = /* @__PURE__ */ new Map();
+  const freq = new Map;
   for (const w of words) {
-    if (w.length < 2 || isStopword(w)) continue;
+    if (w.length < 2 || isStopword(w))
+      continue;
     freq.set(w, (freq.get(w) ?? 0) + 1);
   }
   return [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([word, count]) => ({ word, count }));
@@ -723,7 +765,9 @@ var buildStyleProfileTool = tool4({
     samples: tool4.schema.array(tool4.schema.string()).min(1).describe("Sample text passages")
   },
   async execute(args) {
-    const combined = args.samples.join("\n\n");
+    const combined = args.samples.join(`
+
+`);
     const sentences = splitSentences(combined);
     const paragraphs = splitParagraphs(combined);
     const words = tokenizeWords(combined);
@@ -776,7 +820,8 @@ var buildStyleProfileTool = tool4({
       "- Preserve manuscript language and register.",
       "- Match the detected rhythm and sentence structure when writing new content."
     ];
-    return lines.join("\n");
+    return lines.join(`
+`);
   }
 });
 
@@ -826,11 +871,11 @@ var scanManuscriptsTool = tool6({
   description: "Find manuscript files in the project (md/mdx/txt/docx) with strong ignore defaults.",
   args: {
     roots: tool6.schema.array(tool6.schema.string()).optional().describe("Optional roots (relative to session directory or absolute)."),
-    maxFiles: tool6.schema.number().int().min(1).max(2e4).optional().describe("Max files to return (default 2000).")
+    maxFiles: tool6.schema.number().int().min(1).max(20000).optional().describe("Max files to return (default 2000).")
   },
   async execute(args, context) {
-    const maxFiles = args.maxFiles ?? 2e3;
-    const roots = (args.roots?.length ? args.roots : [context.worktree]).map((r) => path6.isAbsolute(r) ? r : path6.join(context.directory, r));
+    const maxFiles = args.maxFiles ?? 2000;
+    const roots = ((args.roots?.length) ? args.roots : [context.worktree]).map((r) => path6.isAbsolute(r) ? r : path6.join(context.directory, r));
     const patterns = roots.map((r) => path6.join(r, "**/*.{md,mdx,txt,docx}"));
     const files = await fg2(patterns, { ignore: DEFAULT_IGNORE_GLOBS, onlyFiles: true, unique: true, dot: false });
     const rel = files.map((f) => path6.relative(context.worktree, f));
@@ -898,13 +943,14 @@ var readManuscriptChunkTool = tool7({
   args: {
     path: tool7.schema.string().describe("Path to a manuscript file (relative to session directory or absolute)."),
     cursor: tool7.schema.number().int().min(0).optional().describe("Cursor offset (chars). Default 0."),
-    maxChars: tool7.schema.number().int().min(1e3).max(5e4).optional().describe("Max characters to return (default 12000).")
+    maxChars: tool7.schema.number().int().min(1000).max(50000).optional().describe("Max characters to return (default 12000).")
   },
   async execute(args, context) {
-    const maxChars = args.maxChars ?? 12e3;
+    const maxChars = args.maxChars ?? 12000;
     const cursor = args.cursor ?? 0;
     const abs = path9.isAbsolute(args.path) ? args.path : path9.join(context.directory, args.path);
-    if (!await fileExists(abs)) throw new Error(`File not found: ${abs}`);
+    if (!await fileExists(abs))
+      throw new Error(`File not found: ${abs}`);
     const ext = path9.extname(abs).toLowerCase();
     let readPath = abs;
     let cacheInfo;
@@ -918,18 +964,14 @@ var readManuscriptChunkTool = tool7({
       cacheInfo = { cachePath, textLength };
     }
     const chunk = await readTextChunk({ absPath: readPath, cursor, maxChars });
-    return JSON.stringify(
-      {
-        file: path9.relative(context.worktree, abs),
-        cursor,
-        cursorNext: chunk.cursorNext,
-        done: chunk.done,
-        text: chunk.text,
-        cache: cacheInfo ? { path: cacheInfo.cachePath, textLength: cacheInfo.textLength } : void 0
-      },
-      null,
-      2
-    );
+    return JSON.stringify({
+      file: path9.relative(context.worktree, abs),
+      cursor,
+      cursorNext: chunk.cursorNext,
+      done: chunk.done,
+      text: chunk.text,
+      cache: cacheInfo ? { path: cacheInfo.cachePath, textLength: cacheInfo.textLength } : undefined
+    }, null, 2);
   }
 });
 
@@ -956,7 +998,8 @@ async function loadCanonDB(projectDir) {
   try {
     const raw = await readFile4(p, "utf8");
     const parsed = JSON.parse(raw);
-    if (parsed?.version !== 1) return emptyCanonDB();
+    if (parsed?.version !== 1)
+      return emptyCanonDB();
     return parsed;
   } catch {
     return emptyCanonDB();
@@ -982,8 +1025,10 @@ async function saveConflicts(projectDir, conflicts) {
 }
 function pushVariant(arr, value) {
   const v = value.trim();
-  if (!v) return { changed: false, variants: arr };
-  if (arr.some((x) => x.trim() === v)) return { changed: false, variants: arr };
+  if (!v)
+    return { changed: false, variants: arr };
+  if (arr.some((x) => x.trim() === v))
+    return { changed: false, variants: arr };
   return { changed: true, variants: [...arr, v] };
 }
 function upsertVariant(params) {
@@ -993,7 +1038,8 @@ function upsertVariant(params) {
   return { variants: next.variants, changed: next.changed, conflict };
 }
 function renderVariants(label, variants) {
-  if (variants.length <= 1) return `${label}: ${variants[0] ?? ""}`.trimEnd();
+  if (variants.length <= 1)
+    return `${label}: ${variants[0] ?? ""}`.trimEnd();
   return `${label}: { ${variants.join(" | ")} } (unresolved)`;
 }
 
@@ -1001,14 +1047,12 @@ function renderVariants(label, variants) {
 var canonMergeTool = tool8({
   description: "Merge extracted canon updates into the per-project canon DB. Conflicting facts are kept as variants and logged as conflicts.",
   args: {
-    updates: tool8.schema.array(
-      tool8.schema.object({
-        kind: tool8.schema.enum(["character", "location", "glossary", "world_rule", "timeline", "thread"]),
-        key: tool8.schema.string().min(1).describe("Entity key (e.g. character name, term, rule label)."),
-        field: tool8.schema.string().optional().describe("Field name for character/location (e.g. age, hair, status)."),
-        value: tool8.schema.string().min(1).describe("Proposed value.")
-      })
-    ).min(1).describe("List of canon updates")
+    updates: tool8.schema.array(tool8.schema.object({
+      kind: tool8.schema.enum(["character", "location", "glossary", "world_rule", "timeline", "thread"]),
+      key: tool8.schema.string().min(1).describe("Entity key (e.g. character name, term, rule label)."),
+      field: tool8.schema.string().optional().describe("Field name for character/location (e.g. age, hair, status)."),
+      value: tool8.schema.string().min(1).describe("Proposed value.")
+    })).min(1).describe("List of canon updates")
   },
   async execute(args, context) {
     const configRoot = detectConfigRoot();
@@ -1021,7 +1065,8 @@ var canonMergeTool = tool8({
       const kind = u.kind;
       const key = u.key.trim();
       const value = u.value.trim();
-      if (!key || !value) continue;
+      if (!key || !value)
+        continue;
       if (kind === "character" || kind === "location") {
         const field = (u.field ?? "notes").trim();
         const table = kind === "character" ? db.characters : db.locations;
@@ -1038,52 +1083,51 @@ var canonMergeTool = tool8({
         db.glossary[key] ??= { definitions: [] };
         const merged = upsertVariant({ variants: db.glossary[key].definitions, value });
         db.glossary[key].definitions = merged.variants;
-        if (merged.conflict) createdConflicts.push({ kind, key, variants: merged.variants, status: "open" });
+        if (merged.conflict)
+          createdConflicts.push({ kind, key, variants: merged.variants, status: "open" });
         continue;
       }
       if (kind === "world_rule") {
         db.world_rules[key] ??= { variants: [] };
         const merged = upsertVariant({ variants: db.world_rules[key].variants, value });
         db.world_rules[key].variants = merged.variants;
-        if (merged.conflict) createdConflicts.push({ kind, key, variants: merged.variants, status: "open" });
+        if (merged.conflict)
+          createdConflicts.push({ kind, key, variants: merged.variants, status: "open" });
         continue;
       }
       if (kind === "timeline") {
         db.timeline[key] ??= { variants: [] };
         const merged = upsertVariant({ variants: db.timeline[key].variants, value });
         db.timeline[key].variants = merged.variants;
-        if (merged.conflict) createdConflicts.push({ kind, key, variants: merged.variants, status: "open" });
+        if (merged.conflict)
+          createdConflicts.push({ kind, key, variants: merged.variants, status: "open" });
         continue;
       }
       if (kind === "thread") {
         db.threads[key] ??= { variants: [] };
         const merged = upsertVariant({ variants: db.threads[key].variants, value });
         db.threads[key].variants = merged.variants;
-        if (merged.conflict) createdConflicts.push({ kind, key, variants: merged.variants, status: "open" });
+        if (merged.conflict)
+          createdConflicts.push({ kind, key, variants: merged.variants, status: "open" });
         continue;
       }
     }
-    const existingKey = new Set(
-      conflicts.map((c) => `${c.kind}|${c.key}|${c.field ?? ""}|${(c.variants ?? []).join("||")}`)
-    );
+    const existingKey = new Set(conflicts.map((c) => `${c.kind}|${c.key}|${c.field ?? ""}|${(c.variants ?? []).join("||")}`));
     for (const c of createdConflicts) {
       const k = `${c.kind}|${c.key}|${c.field ?? ""}|${(c.variants ?? []).join("||")}`;
-      if (existingKey.has(k)) continue;
+      if (existingKey.has(k))
+        continue;
       conflicts.push(c);
       existingKey.add(k);
     }
     await saveCanonDB(projectDir, db);
     await saveConflicts(projectDir, conflicts);
-    return JSON.stringify(
-      {
-        updated: args.updates.length,
-        conflictsAdded: createdConflicts.length,
-        canonDBPath: path11.join(projectDir, "canon_db.json"),
-        conflictsPath: path11.join(projectDir, "canon_conflicts.json")
-      },
-      null,
-      2
-    );
+    return JSON.stringify({
+      updated: args.updates.length,
+      conflictsAdded: createdConflicts.length,
+      canonDBPath: path11.join(projectDir, "canon_db.json"),
+      conflictsPath: path11.join(projectDir, "canon_conflicts.json")
+    }, null, 2);
   }
 });
 
@@ -1110,7 +1154,8 @@ var canonSnapshotTool = tool9({
         }
         lines.push("");
       }
-      return lines.join("\n").trimEnd();
+      return lines.join(`
+`).trimEnd();
     })();
     const locationsMd = (() => {
       const lines = ["# locations.md", ""];
@@ -1123,7 +1168,8 @@ var canonSnapshotTool = tool9({
         }
         lines.push("");
       }
-      return lines.join("\n").trimEnd();
+      return lines.join(`
+`).trimEnd();
     })();
     const glossaryMd = (() => {
       const lines = ["# glossary.md", ""];
@@ -1131,11 +1177,14 @@ var canonSnapshotTool = tool9({
       for (const term of terms) {
         const defs = db.glossary[term].definitions;
         lines.push(`## ${term}`);
-        for (const d of defs) lines.push(`- ${d}`);
-        if (defs.length > 1) lines.push("- (unresolved variants)");
+        for (const d of defs)
+          lines.push(`- ${d}`);
+        if (defs.length > 1)
+          lines.push("- (unresolved variants)");
         lines.push("");
       }
-      return lines.join("\n").trimEnd();
+      return lines.join(`
+`).trimEnd();
     })();
     const worldRulesMd = (() => {
       const lines = ["# world_rules.md", ""];
@@ -1143,11 +1192,14 @@ var canonSnapshotTool = tool9({
       for (const r of rules) {
         lines.push(`## ${r}`);
         const vs = db.world_rules[r].variants;
-        for (const v of vs) lines.push(`- ${v}`);
-        if (vs.length > 1) lines.push("- (unresolved variants)");
+        for (const v of vs)
+          lines.push(`- ${v}`);
+        if (vs.length > 1)
+          lines.push("- (unresolved variants)");
         lines.push("");
       }
-      return lines.join("\n").trimEnd();
+      return lines.join(`
+`).trimEnd();
     })();
     const timelineMd = (() => {
       const lines = ["# timeline.md", ""];
@@ -1156,35 +1208,36 @@ var canonSnapshotTool = tool9({
         const vs = db.timeline[k].variants;
         lines.push(`- ${renderVariants(k, vs)}`);
       }
-      if (!keys.length) lines.push("(empty)");
-      return lines.join("\n").trimEnd();
+      if (!keys.length)
+        lines.push("(empty)");
+      return lines.join(`
+`).trimEnd();
     })();
     const watchlistMd = (() => {
       const lines = ["# continuity_watchlist.md", "", "## Open Conflicts", ""];
       const open = conflicts.filter((c) => c.status === "open");
-      if (!open.length) return lines.concat(["(none)"]).join("\n");
+      if (!open.length)
+        return lines.concat(["(none)"]).join(`
+`);
       for (const c of open) {
         const field = c.field ? `.${c.field}` : "";
         lines.push(`- [ ] ${c.kind}:${c.key}${field} => { ${c.variants.join(" | ")} }`);
       }
-      return lines.join("\n");
+      return lines.join(`
+`);
     })();
-    return JSON.stringify(
-      {
-        characters: charactersMd,
-        locations: locationsMd,
-        glossary: glossaryMd,
-        world_rules: worldRulesMd,
-        timeline: timelineMd,
-        continuity_watchlist: watchlistMd,
-        state: {
-          canonDBPath: path12.join(projectDir, "canon_db.json"),
-          conflictsPath: path12.join(projectDir, "canon_conflicts.json")
-        }
-      },
-      null,
-      2
-    );
+    return JSON.stringify({
+      characters: charactersMd,
+      locations: locationsMd,
+      glossary: glossaryMd,
+      world_rules: worldRulesMd,
+      timeline: timelineMd,
+      continuity_watchlist: watchlistMd,
+      state: {
+        canonDBPath: path12.join(projectDir, "canon_db.json"),
+        conflictsPath: path12.join(projectDir, "canon_conflicts.json")
+      }
+    }, null, 2);
   }
 });
 
@@ -1215,13 +1268,14 @@ function normalizeOptions(options) {
 async function maybeToast(client, body) {
   try {
     await client.tui.showToast({ body: { message: body.message, variant: body.variant ?? "info" } });
-  } catch {
-  }
+  } catch {}
 }
 async function backupFileIfNeeded(filePath, backupMode, isForce) {
   const shouldBackup = backupMode === "always" || backupMode === "on-force" && isForce;
-  if (!shouldBackup) return;
-  if (!await fileExists(filePath)) return;
+  if (!shouldBackup)
+    return;
+  if (!await fileExists(filePath))
+    return;
   const bak = `${filePath}.bak`;
   const content = await readText(filePath);
   await writeTextAtomic(bak, content);
@@ -1297,18 +1351,15 @@ var openQuillServer = async (ctx, options) => {
     const pkgUrl = new URL("../package.json", import.meta.url);
     const pkg = JSON.parse(await Bun.file(pkgUrl).text());
     version = pkg.version ?? version;
-  } catch {
-  }
+  } catch {}
   const hooks = {
     tool: makeTools({ configRoot }),
-    // Enforce per-project language preference at the system layer.
     "experimental.chat.system.transform": async (_input, output) => {
       const prefs = await loadProjectPrefs(getStateDir(configRoot));
       const lang = prefs.languageByWorktree?.[ctx.worktree] ?? o.defaultLanguage;
-      if (!lang) return;
-      output.system.push(
-        `Open Quill: Default output language for this project is "${lang}". Respond in this language unless the user explicitly requests otherwise.`
-      );
+      if (!lang)
+        return;
+      output.system.push(`Open Quill: Default output language for this project is "${lang}". Respond in this language unless the user explicitly requests otherwise.`);
     },
     "experimental.session.compacting": async (_input, output) => {
       const prefs = await loadProjectPrefs(getStateDir(configRoot));
@@ -1316,9 +1367,7 @@ var openQuillServer = async (ctx, options) => {
       if (lang) {
         output.context.push(`Open Quill: Project default output language is ${lang}.`);
       }
-      output.context.push(
-        "Open Quill: You are operating in writing mode. Prefer preserving manuscript language and register. Canon/memory files (if present) are project_brief.md, summary.md, glossary.md, characters.md, locations.md, timeline.md, world_rules.md, style_profile.md, continuity_watchlist.md."
-      );
+      output.context.push("Open Quill: You are operating in writing mode. Prefer preserving manuscript language and register. Canon/memory files (if present) are project_brief.md, summary.md, glossary.md, characters.md, locations.md, timeline.md, world_rules.md, style_profile.md, continuity_watchlist.md.");
     }
   };
   await ensureDir(getStateDir(configRoot));
@@ -1337,8 +1386,7 @@ var openQuillServer = async (ctx, options) => {
         }
       }
     });
-  } catch {
-  }
+  } catch {}
   return hooks;
 };
 
@@ -1348,9 +1396,10 @@ var moduleExport = {
   id: "open-quill",
   server: openQuillServer
 };
-var index_default = moduleExport;
+var src_default = moduleExport;
 export {
-  OpenQuill,
-  index_default as default
+  src_default as default,
+  OpenQuill
 };
-//# sourceMappingURL=index.js.map
+
+//# debugId=C5A1567FF7E3F56264756E2164756E21

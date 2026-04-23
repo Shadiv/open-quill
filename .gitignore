@@ -1,6 +1,7 @@
 node_modules/
 .config/
 .ralph/
+.claude/
 .DS_Store
 .env
 .env.*
@@ -13,3 +14,4 @@ IMPLEMENTATION_PLAN.md
 .claude/
 settings.local.json
 *.tgz
+dist/
