@@ -7,6 +7,8 @@ permission:
   webfetch: ask
   task:
     "*": allow
+tools:
+  glob: false
 ---
 
 ## Identity

@@ -50,8 +50,7 @@
     "@opencode-ai/plugin": "^1.1.1",
     "diff": "^5.2.0",
     "fast-glob": "^3.3.2",
-    "mammoth": "^1.8.0",
-    "open-quill": "github:Shadiv/open-quill"
+    "mammoth": "^1.8.0"
   },
   "devDependencies": {
     "@types/bun": "^1.2.21",

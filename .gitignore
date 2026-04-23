@@ -11,3 +11,6 @@ yarn-error.log*
 pnpm-debug.log*
 DEVELOPMENT_PLAN.md
 IMPLEMENTATION_PLAN.md
+.claude/
+settings.local.json
+*.tgz

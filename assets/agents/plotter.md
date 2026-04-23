@@ -5,6 +5,8 @@ permission:
   edit: deny
   bash: deny
   webfetch: deny
+tools:
+  glob: false
 ---
 
 ## Identity
