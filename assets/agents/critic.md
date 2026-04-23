@@ -1,6 +1,6 @@
 ---
 description: Critic (quality review, continuity risks, targeted improvements)
-mode: subagent
+mode: primary
 permission:
   edit: deny
   bash: deny

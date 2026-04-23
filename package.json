@@ -1,6 +1,6 @@
 {
   "name": "open-quill",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenCode writing plugin: agents, commands, and writing tools",
   "type": "module",
   "license": "MIT",
