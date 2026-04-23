@@ -32,15 +32,15 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./src/index.ts"
+      "default": "./dist/index.js"
     }
   },
   "files": [
-    "src/",
-    "assets/"
+    "dist/"
   ],
   "scripts": {
     "build": "tsup",
+    "prepare": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:build": "node scripts/smoke.mjs",
