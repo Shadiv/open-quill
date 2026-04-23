@@ -32,11 +32,12 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "default": "./src/index.ts"
     }
   },
   "files": [
-    "dist/"
+    "src/",
+    "assets/"
   ],
   "scripts": {
     "build": "tsup",
