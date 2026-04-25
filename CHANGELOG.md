@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-04-25
+
+### Fixed
+
+- Plugin no longer deadlocks the opencode host on startup. The bootstrap
+  previously awaited `client.tui.showToast` and `client.app.log` *before*
+  returning hooks; the host serves those endpoints from a TUI consumer that
+  only starts after plugin loading completes, so the awaited HTTP calls
+  hung forever and opencode never finished launching. Templates now install
+  in the background and toasts are fire-and-forget.
+
 ## [0.1.3] - 2026-04-25
 
 ### Fixed

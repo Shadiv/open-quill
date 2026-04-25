@@ -36,12 +36,13 @@ function normalizeOptions(options?: PluginOptions): Required<Pick<Options, "inst
   }
 }
 
-async function maybeToast(client: any, body: { message: string; variant?: "success" | "error" | "warning" | "info" }) {
-  try {
-    await client.tui.showToast({ body: { message: body.message, variant: body.variant ?? "info" } })
-  } catch {
-    // Best-effort; not all environments expose TUI.
-  }
+function maybeToast(client: any, body: { message: string; variant?: "success" | "error" | "warning" | "info" }) {
+  // Fire-and-forget. Awaiting this during plugin bootstrap deadlocks the
+  // host: the toast endpoint exists but the TUI consumer hasn't started
+  // until plugin loading completes.
+  Promise.resolve()
+    .then(() => client.tui.showToast({ body: { message: body.message, variant: body.variant ?? "info" } }))
+    .catch(() => {})
 }
 
 async function backupFileIfNeeded(filePath: string, backupMode: BackupMode, isForce: boolean) {
@@ -131,10 +132,10 @@ async function installTemplates(params: {
   await saveManifest(getStateDir(configRoot), manifest)
 
   if (installed.length || updated.length) {
-    await maybeToast(client, { message: `Open Quill installed/updated writing templates (${installed.length} new, ${updated.length} updated)`, variant: "success" })
+    maybeToast(client, { message: `Open Quill installed/updated writing templates (${installed.length} new, ${updated.length} updated)`, variant: "success" })
   }
   if (skipped.length) {
-    await maybeToast(client, { message: `Open Quill skipped ${skipped.length} existing templates (name collisions)`, variant: "warning" })
+    maybeToast(client, { message: `Open Quill skipped ${skipped.length} existing templates (name collisions)`, variant: "warning" })
   }
 
   return { installed, updated, skipped }
@@ -243,28 +244,35 @@ export const openQuillServer: Plugin = async (ctx, options) => {
     },
   }
 
-  // Bootstrap: install templates on startup.
-  await ensureDir(getStateDir(configRoot))
-  const result = await installTemplates({ configRoot, options: o, version, client: ctx.client })
-
-  // Log outcomes (structured logging preferred).
-  try {
-    await ctx.client.app.log({
-      body: {
-        service: "open-quill",
-        level: "info",
-        message: "Templates install summary",
-        extra: {
-          version,
-          installed: result.installed.map((p) => path.relative(configRoot, p)),
-          updated: result.updated.map((p) => path.relative(configRoot, p)),
-          skipped: result.skipped.map((p) => path.relative(configRoot, p)),
-        },
-      },
-    })
-  } catch {
-    // ignore
-  }
+  // Bootstrap runs in the background so the plugin returns hooks immediately.
+  // Awaiting host I/O here (toasts, app.log) before returning deadlocks the
+  // host: those endpoints expect the TUI consumer, which only starts once
+  // plugin loading completes.
+  void (async () => {
+    try {
+      await ensureDir(getStateDir(configRoot))
+      const result = await installTemplates({ configRoot, options: o, version, client: ctx.client })
+      try {
+        await ctx.client.app.log({
+          body: {
+            service: "open-quill",
+            level: "info",
+            message: "Templates install summary",
+            extra: {
+              version,
+              installed: result.installed.map((p) => path.relative(configRoot, p)),
+              updated: result.updated.map((p) => path.relative(configRoot, p)),
+              skipped: result.skipped.map((p) => path.relative(configRoot, p)),
+            },
+          },
+        })
+      } catch {
+        // ignore
+      }
+    } catch {
+      // ignore — bootstrap is best-effort; templates re-attempt on next start
+    }
+  })()
 
   return hooks
 }
