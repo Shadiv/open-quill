@@ -2,17 +2,21 @@
 description: Prime a writing project (summary + canon + style)
 agent: writer
 ---
+
 Scan the project manuscript (or the provided paths: $ARGUMENTS) with `scan_manuscripts`.
 
-Read manuscript files with `read_manuscript_chunk` — NOT the built-in read tool. This is REQUIRED for `.docx` files (binary ZIP archives that the built-in read tool cannot parse).
+USE `read_manuscript_chunk` for reading project files. NOT the built-in read tool. This is REQUIRED for `.docx` files (binary ZIP archives that the built-in read tool cannot parse).
 
 Before doing anything else, detect the manuscript language by calling `read_manuscript_chunk` on a sample of the files returned by `scan_manuscripts`. Use that language as the default for all output and created files unless the user has set an explicit language preference.
+
+If possible, ORDER files chronologically (if texts are named Chapter 1 / 2 / 3 ... or Book 1,2,3 -> read from 1st)
 
 1. Summarize current story state.
 2. Extract/update canon candidates using the `extract_canon` tool.
 3. If style samples exist, draft/update `style_profile.md` (use `build_style_profile` if helpful).
 
 Create or update these files in the project (ask before editing):
+
 - project_brief.md
 - summary.md
 - characters.md
