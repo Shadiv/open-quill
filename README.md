@@ -6,30 +6,32 @@ Open Quill is an [OpenCode](https://opencode.ai) plugin that turns your coding a
 
 **Specialized agents** — each with a distinct role:
 
-| Agent | Role |
-|-------|------|
-| `writer` | Primary agent: drafting, brainstorming, scene work. Delegates to other agents as needed. |
-| `editor` | Conservative reviser: minimal surgical edits with before/after reasoning. |
-| `cowriter` | Drafts scenes and chapters from an approved plan. |
-| `critic` | Delivers honest, objective critique — no sugarcoating. |
-| `plotter` | Structural analyst: beat sheets, arc planning, alternatives with tradeoffs. |
-| `summarizer` | Extracts plot summaries, chapter breakdowns, character status, open threads. |
-| `lorekeeper` | Maintains canon files (characters, locations, timeline, glossary, world rules). |
-| `stylematcher` | Analyzes prose style and produces quantified style profiles to preserve voice. |
+| Agent          | Role                                                                                     |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| `writer`       | Primary agent: drafting, brainstorming, scene work. Delegates to other agents as needed. |
+| `editor`       | Conservative reviser: minimal surgical edits with before/after reasoning.                |
+| `cowriter`     | Drafts scenes and chapters from an approved plan.                                        |
+| `critic`       | Delivers honest, objective critique — no sugarcoating.                                   |
+| `plotter`      | Structural analyst: beat sheets, arc planning, alternatives with tradeoffs.              |
+| `summarizer`   | Extracts plot summaries, chapter breakdowns, character status, open threads.             |
+| `lorekeeper`   | Maintains canon files (characters, locations, timeline, glossary, world rules).          |
+| `stylematcher` | Analyzes prose style and produces quantified style profiles to preserve voice.           |
+| `style_checker` | Professional proofreader: audits prose against `style_profile.md` and forbidden patterns; scores quality 1–5 across 5 dimensions and rejects below 20/25. |
 
 **Slash commands** for common workflows:
 
-| Command | What it does |
-|---------|-------------|
-| `/story-prime` | Primes a project: summarizes story state, extracts canon, creates all project docs. |
-| `/cowrite-scene` | Drafts a scene from an approved outline. |
-| `/critique-chapter` | Full critique: issues by severity, continuity risks, rewrite suggestions. |
-| `/edit-selection` | Conservative edit of selected text with before/after comparison. |
-| `/plan-next` | Proposes 3-5 options for the next chapter/scene with beat lists. |
-| `/continuity-check` | Checks chapter text against canon for contradictions. |
-| `/refresh-canon` | Updates canon files from the latest manuscript. |
-| `/summarize-project` | Creates a concise manuscript summary with chapter bullets and open threads. |
-| `/writing-lang` | Sets the per-project default output language (e.g., `/writing-lang ru`). |
+| Command              | What it does                                                                        |
+| -------------------- | ----------------------------------------------------------------------------------- |
+| `/story-prime`       | Primes a project: summarizes story state, extracts canon, creates all project docs. |
+| `/cowrite-scene`     | Drafts a scene from an approved outline.                                            |
+| `/critique-chapter`  | Full critique: issues by severity, continuity risks, rewrite suggestions.           |
+| `/edit-selection`    | Conservative edit of selected text with before/after comparison.                    |
+| `/plan-next`         | Proposes 3-5 options for the next chapter/scene with beat lists.                    |
+| `/continuity-check`  | Checks chapter text against canon for contradictions.                               |
+| `/refresh-canon`     | Updates canon files from the latest manuscript.                                     |
+| `/summarize-project` | Creates a concise manuscript summary with chapter bullets and open threads.         |
+| `/writing-lang`      | Sets the per-project default output language (e.g., `/writing-lang ru`).            |
+| `/check_style`       | Audits prose against the project style profile and forbidden patterns; returns a 1–5 scoreboard. |
 
 **Tools** available to agents:
 
@@ -45,30 +47,19 @@ Open Quill is an [OpenCode](https://opencode.ai) plugin that turns your coding a
 
 > **Runtime**: Bun, via [opencode](https://opencode.ai). Open Quill uses `Bun.file` and `Bun.env` at runtime, so it runs only inside the opencode host (which is Bun-based) — it is not intended to be imported from a plain Node.js process.
 
-1. Install the plugin:
-
 ```bash
-npm install open-quill
+opencode plugin open-quill -g
 ```
 
-2. Enable it in your `opencode.json`:
-
-```jsonc
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": [["open-quill", { "installMode": "owned-only" }]]
-}
-```
-
-On startup, Open Quill installs agents into `~/.config/opencode/agents/` and commands into `~/.config/opencode/commands/` (Windows: `%USERPROFILE%\.config\opencode`).
+This installs the package and automatically adds it to your global `opencode.json`. On next startup, Open Quill installs agents into `~/.config/opencode/agents/` and commands into `~/.config/opencode/commands/` (Windows: `%USERPROFILE%\.config\opencode`).
 
 ### Options
 
-| Option | Values | Default | Description |
-|--------|--------|---------|-------------|
-| `installMode` | `"owned-only"` `"if-missing"` `"force"` | `"owned-only"` | How to handle existing files. `owned-only` updates only files managed by Open Quill; `if-missing` never overwrites; `force` overwrites everything. |
-| `backup` | `"on-force"` `"always"` `"never"` | `"on-force"` | When to create `.bak` backups before overwriting. |
-| `defaultLanguage` | any language code | — | Default output language for all projects (overridable per-project with `/writing-lang`). |
+| Option            | Values                                  | Default        | Description                                                                                                                                        |
+| ----------------- | --------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `installMode`     | `"owned-only"` `"if-missing"` `"force"` | `"owned-only"` | How to handle existing files. `owned-only` updates only files managed by Open Quill; `if-missing` never overwrites; `force` overwrites everything. |
+| `backup`          | `"on-force"` `"always"` `"never"`       | `"on-force"`   | When to create `.bak` backups before overwriting.                                                                                                  |
+| `defaultLanguage` | any language code                       | —              | Default output language for all projects (overridable per-project with `/writing-lang`).                                                           |
 
 ## Usage
 
@@ -95,30 +86,32 @@ Open Quill — плагин для [OpenCode](https://opencode.ai), которы
 
 **Специализированные агенты** — каждый со своей ролью:
 
-| Агент | Роль |
-|-------|------|
-| `writer` | Основной агент: черновики, мозговой штурм, работа над сценами. Делегирует другим агентам по необходимости. |
-| `editor` | Консервативный редактор: минимальные точечные правки с обоснованием. |
-| `cowriter` | Пишет сцены и главы по утверждённому плану. |
-| `critic` | Прямая, объективная критика — без приукрашивания. |
-| `plotter` | Структурный аналитик: побитовые планы, арки, варианты с компромиссами. |
-| `summarizer` | Краткое содержание глав, статус персонажей, нерешённые сюжетные линии. |
-| `lorekeeper` | Ведёт файлы канона (персонажи, локации, хронология, глоссарий, правила мира). |
-| `stylematcher` | Анализирует стиль прозы и создаёт количественный профиль стиля для сохранения авторского голоса. |
+| Агент          | Роль                                                                                                       |
+| -------------- | ---------------------------------------------------------------------------------------------------------- |
+| `writer`       | Основной агент: черновики, мозговой штурм, работа над сценами. Делегирует другим агентам по необходимости. |
+| `editor`       | Консервативный редактор: минимальные точечные правки с обоснованием.                                       |
+| `cowriter`     | Пишет сцены и главы по утверждённому плану.                                                                |
+| `critic`       | Прямая, объективная критика — без приукрашивания.                                                          |
+| `plotter`      | Структурный аналитик: побитовые планы, арки, варианты с компромиссами.                                     |
+| `summarizer`   | Краткое содержание глав, статус персонажей, нерешённые сюжетные линии.                                     |
+| `lorekeeper`   | Ведёт файлы канона (персонажи, локации, хронология, глоссарий, правила мира).                              |
+| `stylematcher` | Анализирует стиль прозы и создаёт количественный профиль стиля для сохранения авторского голоса.           |
+| `style_checker` | Профессиональный корректор: проверяет прозу на соответствие `style_profile.md` и запрещённым шаблонам; ставит оценку 1–5 по пяти параметрам, отбраковывает результат ниже 20/25. |
 
 **Слеш-команды** для типовых сценариев работы:
 
-| Команда | Описание |
-|---------|----------|
-| `/story-prime` | Инициализация проекта: сводка сюжета, извлечение канона, создание всех документов. |
-| `/cowrite-scene` | Черновик сцены по утверждённому плану. |
-| `/critique-chapter` | Полная критика главы: проблемы по серьёзности, риски непрерывности, предложения. |
-| `/edit-selection` | Консервативная правка выделенного текста с до/после. |
-| `/plan-next` | 3-5 вариантов следующей главы/сцены с побитовыми планами. |
-| `/continuity-check` | Проверка текста главы на противоречия с каноном. |
-| `/refresh-canon` | Обновление файлов канона по последней версии рукописи. |
-| `/summarize-project` | Краткая сводка рукописи с пулями по главам и открытыми вопросами. |
-| `/writing-lang` | Установка языка вывода для проекта (например, `/writing-lang ru`). |
+| Команда              | Описание                                                                           |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| `/story-prime`       | Инициализация проекта: сводка сюжета, извлечение канона, создание всех документов. |
+| `/cowrite-scene`     | Черновик сцены по утверждённому плану.                                             |
+| `/critique-chapter`  | Полная критика главы: проблемы по серьёзности, риски непрерывности, предложения.   |
+| `/edit-selection`    | Консервативная правка выделенного текста с до/после.                               |
+| `/plan-next`         | 3-5 вариантов следующей главы/сцены с побитовыми планами.                          |
+| `/continuity-check`  | Проверка текста главы на противоречия с каноном.                                   |
+| `/refresh-canon`     | Обновление файлов канона по последней версии рукописи.                             |
+| `/summarize-project` | Краткая сводка рукописи с пулями по главам и открытыми вопросами.                  |
+| `/writing-lang`      | Установка языка вывода для проекта (например, `/writing-lang ru`).                 |
+| `/check_style`       | Проверка прозы по профилю стиля и списку запрещённых шаблонов; возвращает оценку 1–5 по пяти параметрам. |
 
 **Инструменты**, доступные агентам:
 
@@ -134,30 +127,19 @@ Open Quill — плагин для [OpenCode](https://opencode.ai), которы
 
 > **Среда выполнения**: Bun, через [opencode](https://opencode.ai). Open Quill использует `Bun.file` и `Bun.env` во время выполнения, поэтому работает только внутри хоста opencode (основанного на Bun) — импортировать его из обычного Node.js-процесса не предполагается.
 
-1. Установите плагин:
-
 ```bash
-npm install open-quill
+opencode plugin open-quill -g
 ```
 
-2. Включите его в `opencode.json`:
-
-```jsonc
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugin": [["open-quill", { "installMode": "owned-only" }]]
-}
-```
-
-При запуске Open Quill устанавливает агентов в `~/.config/opencode/agents/` и команды в `~/.config/opencode/commands/` (Windows: `%USERPROFILE%\.config\opencode`).
+Команда устанавливает пакет и автоматически добавляет его в глобальный `opencode.json`. При следующем запуске Open Quill установит агентов в `~/.config/opencode/agents/` и команды в `~/.config/opencode/commands/` (Windows: `%USERPROFILE%\.config\opencode`).
 
 ### Параметры
 
-| Параметр | Значения | По умолчанию | Описание |
-|----------|----------|-------------|----------|
-| `installMode` | `"owned-only"` `"if-missing"` `"force"` | `"owned-only"` | Управление существующими файлами. `owned-only` обновляет только файлы Open Quill; `if-missing` никогда не перезаписывает; `force` перезаписывает всё. |
-| `backup` | `"on-force"` `"always"` `"never"` | `"on-force"` | Когда создавать `.bak`-копии перед перезаписью. |
-| `defaultLanguage` | любой код языка | — | Язык вывода по умолчанию (переопределяется для конкретного проекта через `/writing-lang`). |
+| Параметр          | Значения                                | По умолчанию   | Описание                                                                                                                                              |
+| ----------------- | --------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `installMode`     | `"owned-only"` `"if-missing"` `"force"` | `"owned-only"` | Управление существующими файлами. `owned-only` обновляет только файлы Open Quill; `if-missing` никогда не перезаписывает; `force` перезаписывает всё. |
+| `backup`          | `"on-force"` `"always"` `"never"`       | `"on-force"`   | Когда создавать `.bak`-копии перед перезаписью.                                                                                                       |
+| `defaultLanguage` | любой код языка                         | —              | Язык вывода по умолчанию (переопределяется для конкретного проекта через `/writing-lang`).                                                            |
 
 ## Использование
 

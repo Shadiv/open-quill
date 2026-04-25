@@ -7,7 +7,10 @@ import { ensureDocxCache, readTextChunk } from "../util/manuscript.js"
 import { fileExists } from "../util/fs.js"
 
 export const readManuscriptChunkTool = tool({
-  description: "Read the next chunk of a manuscript file (.txt/.md/.mdx/.docx) using a cursor for iterative summarization.",
+  description:
+    "REQUIRED tool for reading manuscript files (.txt/.md/.mdx/.docx). " +
+    "For .docx (binary ZIP) this is the ONLY way — the built-in read tool will fail. " +
+    "Returns the next chunk of text via a cursor for iterative summarization.",
   args: {
     path: tool.schema.string().describe("Path to a manuscript file (relative to session directory or absolute)."),
     cursor: tool.schema.number().int().min(0).optional().describe("Cursor offset (chars). Default 0."),

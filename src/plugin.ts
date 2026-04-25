@@ -154,8 +154,72 @@ export const openQuillServer: Plugin = async (ctx, options) => {
     // ignore
   }
 
+  const BUILTIN_READ_IDS = new Set(["read", "file_read", "Read"])
+
+  // Layer 2 enforcement: track which agent is active per session, so we can
+  // detect drafting-loop skips on text completion. Populated from chat.params.
+  const sessionAgent = new Map<string, string>()
+  const LOOP_ENFORCED_AGENTS = new Set(["writer", "cowriter"])
+  // Threshold below which we treat output as "not a draft" (questions, status, short edits).
+  const DRAFT_MIN_CHARS = 1500
+  const SCOREBOARD_STYLE_RE = /Style\s*:\s*\d+\s*\/\s*25/i
+  const SCOREBOARD_CRITIQUE_RE = /Critique\s*:\s*\d+\s*\/\s*25/i
+
+  // TODO (Layer 3 enforcement?): Hard tool-gate on file commits.
+  // If a draft is written/edited to a manuscript file, require @style_checker AND @critic
+  // to have fired in the current draft cycle (track via tool.execute.after subagent
+  // invocations) and throw in tool.execute.before with a retry instruction otherwise.
+  // Maintenance cost: keeping a canon-file path whitelist (plot.md, summary.md,
+  // characters.md, locations.md, timeline.md, world_rules.md, style_profile.md,
+  // continuity_watchlist.md, project_brief.md) in sync with the prompts. Add only if
+  // Layers 1+2 leak too much in practice.
+
   const hooks: Hooks = {
     tool: makeTools({ configRoot }),
+
+    // Hard block: refuse built-in read on .docx so the model must use read_manuscript_chunk.
+    "tool.execute.before": async (input, output) => {
+      if (!BUILTIN_READ_IDS.has(input.tool)) return
+      const a = output.args ?? {}
+      const fp: unknown = a.filePath ?? a.path ?? a.file
+      if (typeof fp !== "string") return
+      if (!fp.toLowerCase().endsWith(".docx")) return
+      throw new Error(
+        `Open Quill: the built-in '${input.tool}' tool cannot read .docx files (binary ZIP archives). ` +
+          `Use the 'read_manuscript_chunk' tool instead — it extracts and caches text via mammoth. ` +
+          `Retry with: read_manuscript_chunk({ path: ${JSON.stringify(fp)}, cursor: 0 })`,
+      )
+    },
+
+    // Layer 2: record the agent driving each session so text-complete can check it.
+    "chat.params": async (input, _output) => {
+      sessionAgent.set(input.sessionID, input.agent)
+    },
+
+    // Layer 2: detect long-form prose from writer/cowriter that's missing the loop scoreboard.
+    // Append a self-correcting reminder so the next turn re-runs the gates.
+    "experimental.text.complete": async (input, output) => {
+      const agent = sessionAgent.get(input.sessionID)
+      if (!agent || !LOOP_ENFORCED_AGENTS.has(agent)) return
+      const text = output.text ?? ""
+      if (text.length < DRAFT_MIN_CHARS) return
+      if (SCOREBOARD_STYLE_RE.test(text) && SCOREBOARD_CRITIQUE_RE.test(text)) return
+      output.text =
+        text +
+        "\n\n---\n" +
+        "Open Quill: drafting loop appears skipped — final scoreboard missing. " +
+        "Per the Drafting protocol, non-trivial drafts MUST run @style_checker AND @critic " +
+        "and end with `Style: X/25 · Critique: X/25 · N cycles`. Re-run the loop on this draft."
+    },
+
+    // Soft reminder: append a warning to the built-in read tool's description.
+    "tool.definition": async (input, output) => {
+      if (!BUILTIN_READ_IDS.has(input.toolID)) return
+      output.description =
+        (output.description ?? "") +
+        "\n\nOpen Quill: DO NOT use this tool on .docx files — they are binary ZIP archives and will fail. " +
+        "For any path ending in .docx, use read_manuscript_chunk instead."
+    },
 
     // Enforce per-project language preference at the system layer.
     "experimental.chat.system.transform": async (_input, output) => {

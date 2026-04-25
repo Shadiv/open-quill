@@ -16,6 +16,10 @@ export const scanManuscriptsTool = tool({
     const patterns = roots.map((r) => path.join(r, "**/*.{md,mdx,txt,docx}"))
     const files = await fg(patterns, { ignore: DEFAULT_IGNORE_GLOBS, onlyFiles: true, unique: true, dot: false })
     const rel = files.map((f) => path.relative(context.worktree, f))
-    return JSON.stringify({ count: rel.length, files: rel.slice(0, maxFiles) }, null, 2)
+    const hasDocx = rel.some((f) => f.toLowerCase().endsWith(".docx"))
+    const note = hasDocx
+      ? "Use 'read_manuscript_chunk' to read any of these files. REQUIRED for .docx — the built-in read tool will fail on them."
+      : "Use 'read_manuscript_chunk' to read any of these files."
+    return JSON.stringify({ count: rel.length, files: rel.slice(0, maxFiles), note }, null, 2)
   },
 })
