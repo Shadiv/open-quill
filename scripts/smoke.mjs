@@ -3,7 +3,8 @@ import { readdir } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import path from "node:path"
 
-const distIndex = fileURLToPath(new URL("../dist/index.js", import.meta.url))
+const distIndexUrl = new URL("../dist/index.js", import.meta.url)
+const distIndex = fileURLToPath(distIndexUrl)
 if (!existsSync(distIndex)) {
   console.error(`[smoke] dist/index.js not found at ${distIndex}. Run 'npm run build' first.`)
   process.exit(1)
@@ -29,7 +30,7 @@ if (commands.length === 0) {
   process.exit(1)
 }
 
-const mod = await import(distIndex)
+const mod = await import(distIndexUrl.href)
 if (!mod.OpenQuill || typeof mod.OpenQuill !== "function") {
   console.error(`[smoke] dist/index.js does not export OpenQuill as a function`)
   process.exit(1)

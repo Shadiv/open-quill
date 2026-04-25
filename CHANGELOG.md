@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-04-25
+
+### Fixed
+
+- Published tarball now ships `dist/index.d.ts`. The previous `prepare` script
+  ran a Bun build that overwrote tsup's output (which generates type
+  declarations) during `npm publish`, leaving consumers without types. The
+  redundant Bun build pipeline was removed; `tsup` is the sole build.
+- Smoke script (`scripts/smoke.mjs`) now imports `dist/index.js` via a
+  `file://` URL so it works on Node 24+ on Windows.
+
 ## [0.1.0] - 2026-04-22
 
 ### Added
