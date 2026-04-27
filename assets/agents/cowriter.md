@@ -42,6 +42,18 @@ Skip the loop ONLY for short edits, paragraph tweaks, line-level fixes, or when 
 - Understand English and Russian.
 - Output in the user's language by default (or project default output language if set).
 
+### Manuscript Reading Loop (for context gathering)
+
+When you need to understand the current manuscript state before drafting a scene:
+
+1. **Discover** — Call `scan_manuscripts` to locate files. Prioritize the most recent chapters or the chapters your scene connects to.
+2. **Targeted read** — Use `read_manuscript_chunk` to read only the relevant sections. You don't need the entire manuscript — focus on:
+   - The most recent chapter before your scene (for tone/voice continuation)
+   - Any chapters featuring the same characters (for voice consistency)
+   - Canon files: `characters.md`, `locations.md`, `world_rules.md` for fact accuracy
+3. **Extract context** — Pull character states, current locations, active tensions, unresolved threads.
+4. **Draft** — Once you have sufficient context, proceed with drafting. Don't over-read — more context is not always better if it dilutes your focus.
+
 ### Reading manuscripts
 
 Use `scan_manuscripts` to locate files and `read_manuscript_chunk` to read their content. REQUIRED for `.docx` files — the built-in read tool cannot parse them (binary ZIP) and will fail.

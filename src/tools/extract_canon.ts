@@ -15,21 +15,169 @@ type Canon = {
   notes: string[]
 }
 
+type CapitalizedMatch = {
+  name: string
+  index: number
+}
+
+type CandidateWithFrequency = {
+  name: string
+  count: number
+}
+
+type CandidateStats = CandidateWithFrequency & {
+  dialogueHits: number
+  locationHits: number
+}
+
+type TokenAnalysis = {
+  totalMatches: number
+  candidates: CandidateStats[]
+}
+
 async function readDocxText(filePath: string) {
   const res = await mammoth.extractRawText({ path: filePath })
   return res.value ?? ""
 }
 
-function extractCapitalizedTokens(text: string): string[] {
-  const tokens = text.match(/\b[\p{Lu}][\p{L}\p{M}'-]{2,}\b/gu) ?? []
-  // Drop common sentence starters.
-  const stop = new Set(["The", "A", "An", "And", "But", "Or", "I", "We", "He", "She", "They", "It", "This", "That", "Вот", "Это", "И", "Но", "А", "Он", "Она", "Они", "Мы", "Я"]) 
-  return Array.from(new Set(tokens.filter((t) => !stop.has(t)))).slice(0, 500)
+const CAPITALIZED_TOKEN_RE = /\b[\p{Lu}][\p{L}\p{M}'-]{2,}\b/gu
+const DIALOGUE_MARKER_RE = /[—«»"“”„]/u
+const LOCATION_PREFIX_RE = /(?:^|[\s(,.;:!?-])(?:в|во|на|из|к|ко|in|at|to|into|from)\s+$/iu
+const STOP_TOKENS = new Set([
+  "The",
+  "A",
+  "An",
+  "And",
+  "But",
+  "Or",
+  "I",
+  "We",
+  "He",
+  "She",
+  "They",
+  "It",
+  "This",
+  "That",
+  "Вот",
+  "Это",
+  "И",
+  "Но",
+  "А",
+  "Он",
+  "Она",
+  "Они",
+  "Мы",
+  "Я",
+])
+
+function collectCapitalizedTokenMatches(text: string): CapitalizedMatch[] {
+  const matches: CapitalizedMatch[] = []
+  const regex = new RegExp(CAPITALIZED_TOKEN_RE.source, CAPITALIZED_TOKEN_RE.flags)
+
+  for (const match of text.matchAll(regex)) {
+    const name = match[0]
+    const index = match.index ?? -1
+    if (index < 0 || STOP_TOKENS.has(name)) continue
+    matches.push({ name, index })
+  }
+
+  return matches
+}
+
+function analyzeCapitalizedTokens(text: string): TokenAnalysis {
+  const stats = new Map<string, CandidateStats>()
+  let totalMatches = 0
+
+  for (const match of collectCapitalizedTokenMatches(text)) {
+    totalMatches += 1
+    const existing = stats.get(match.name) ?? {
+      name: match.name,
+      count: 0,
+      dialogueHits: 0,
+      locationHits: 0,
+    }
+
+    existing.count += 1
+
+    const before = text.slice(Math.max(0, match.index - 32), match.index)
+    const after = text.slice(match.index + match.name.length, match.index + match.name.length + 32)
+
+    if (DIALOGUE_MARKER_RE.test(before) || DIALOGUE_MARKER_RE.test(after)) {
+      existing.dialogueHits += 1
+    }
+
+    if (LOCATION_PREFIX_RE.test(before)) {
+      existing.locationHits += 1
+    }
+
+    stats.set(match.name, existing)
+  }
+
+  return {
+    totalMatches,
+    candidates: Array.from(stats.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
+  }
+}
+
+function extractCapitalizedTokensWithFrequency(text: string): CandidateWithFrequency[] {
+  return analyzeCapitalizedTokens(text).candidates.map(({ name, count }) => ({ name, count }))
+}
+
+function characterScore(candidate: CandidateStats): number {
+  return candidate.count * 3 + candidate.dialogueHits * 4 - candidate.locationHits * 2
+}
+
+function locationScore(candidate: CandidateStats): number {
+  return candidate.count * 2 + candidate.locationHits * 5 - candidate.dialogueHits
+}
+
+function formatCandidate(candidate: CandidateWithFrequency): string {
+  return `${candidate.name} (×${candidate.count})`
+}
+
+function rankCandidates(
+  candidates: CandidateStats[],
+  limit: number,
+  primaryScore: (candidate: CandidateStats) => number,
+  secondaryScore: (candidate: CandidateStats) => number,
+): CandidateWithFrequency[] {
+  return [...candidates]
+    .sort(
+      (a, b) =>
+        primaryScore(b) - primaryScore(a) ||
+        secondaryScore(b) - secondaryScore(a) ||
+        b.count - a.count ||
+        a.name.localeCompare(b.name),
+    )
+    .slice(0, limit)
+    .map(({ name, count }) => ({ name, count }))
+}
+
+function classifyCandidates(candidates: CandidateStats[], characterLimit: number, locationLimit: number) {
+  const preferredCharacters = candidates.filter((candidate) => characterScore(candidate) >= locationScore(candidate))
+  const preferredLocations = candidates.filter((candidate) => locationScore(candidate) > characterScore(candidate))
+
+  const rankedCharacters = rankCandidates(preferredCharacters, characterLimit, characterScore, locationScore)
+  const rankedLocations = rankCandidates(preferredLocations, locationLimit, locationScore, characterScore)
+
+  const usedNames = new Set([...rankedCharacters, ...rankedLocations].map((candidate) => candidate.name))
+
+  const fallbackCharacters = rankCandidates(candidates, characterLimit * 2, characterScore, locationScore).filter(
+    (candidate) => !usedNames.has(candidate.name),
+  )
+  const fallbackLocations = rankCandidates(candidates, locationLimit * 2, locationScore, characterScore).filter(
+    (candidate) => !usedNames.has(candidate.name),
+  )
+
+  return {
+    characters: rankedCharacters.concat(fallbackCharacters).slice(0, characterLimit),
+    locations: rankedLocations.concat(fallbackLocations).slice(0, locationLimit),
+  }
 }
 
 export const extractCanonTool = tool({
   description:
-    "Scan manuscript files (md/txt/docx) and return structured canon candidates (characters, locations, timeline points, rules, unresolved threads).",
+    "Scan manuscript files (md/txt/docx) and return heuristic canon candidates (character names, location names). This is a ROUGH HEURISTIC — use lorekeeper/critic agents to refine and classify the output. Timeline, rules, and threads require LLM-based extraction.",
   args: {
     paths: tool.schema.array(tool.schema.string()).optional().describe("File or directory paths. If omitted, scan the worktree."),
     maxFiles: tool.schema.number().int().min(1).max(5000).optional().describe("Maximum files to scan (default 500)."),
@@ -74,18 +222,23 @@ export const extractCanonTool = tool({
       }
     }
 
-    const caps = extractCapitalizedTokens(corpus)
+    const analysis = analyzeCapitalizedTokens(corpus)
+    const capsWithFreq = analysis.candidates.map(({ name, count }) => ({ name, count }))
+    const { characters, locations } = classifyCandidates(analysis.candidates, 60, 40)
 
-    // Heuristic grouping for v1.
     const canon: Canon = {
-      characters: caps.slice(0, 60),
-      locations: caps.slice(60, 100),
+      characters: characters.map(formatCandidate),
+      locations: locations.map(formatCandidate),
       timeline: [],
       rules: [],
       threads: [],
       notes: [
         `Scanned ${files.length} files (maxFiles=${maxFiles}).`,
-        "Heuristic extraction only. Use lorekeeper/critic agents to refine canon.",
+        `Extracted ${analysis.totalMatches} capitalized tokens.`,
+        `Ranked ${capsWithFreq.length} unique capitalized candidates by frequency and context.`,
+        "IMPORTANT: This is heuristic name extraction only. Characters and locations are BEST-GUESSES based on capitalization frequency.",
+        "Timeline events, world rules, glossary terms, and plot threads require LLM-based extraction by the lorekeeper agent.",
+        "Review and reclassify the candidates before merging into canon.",
         ...notes,
       ],
     }

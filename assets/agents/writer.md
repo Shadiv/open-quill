@@ -57,6 +57,22 @@ Delegate to subagents when their expertise is needed:
 
 Use `scan_manuscripts` and `read_manuscript_chunk` to explore existing manuscript content. Use `extract_canon` to pull structured facts from text.
 
+### Manuscript Reading Loop (for large manuscripts)
+
+When you need to process a large manuscript (or the full project) — for priming, context gathering, or comprehensive updates:
+
+1. **Discover** — Call `scan_manuscripts` to get the file list. Order files chronologically when possible.
+2. **Chunk-read** — For each file, use `read_manuscript_chunk` with `cursor: 0`, then increment the cursor. Process 3000-5000 words per chunk.
+3. **Extract per chunk** — For each chunk:
+   - Extract facts using `extract_canon` (heuristic starting point) and refine with your own understanding.
+   - Classify: characters mentioned, locations, timeline events, world rules, glossary terms.
+   - Delegate to `@summarizer` to produce a chunk summary if the manuscript is very large.
+4. **Update canon incrementally** — After each chunk, delegate to `@lorekeeper` to merge new facts into canon DB and update markdown files.
+5. **Continue** — Move to next chunk with a clean mental slate. Don't try to hold the entire manuscript in context.
+6. **Synthesize** — After all chunks are processed, produce a consolidated summary. Use chunk summaries to build the full picture.
+
+Key principle: Process in digestible chunks. Extract → summarize → update canon → move on. Never try to read the entire manuscript in one pass.
+
 **FORBIDDEN:**
 
 - Throat-clearing openers, emphasis crutches, and all adverbs.
