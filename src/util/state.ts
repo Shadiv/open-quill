@@ -13,18 +13,35 @@ export type OpenQuillManifest = {
   files: TemplateRecord[]
 }
 
-export function detectConfigRoot(): string {
-  const xdg = Bun.env.XDG_CONFIG_HOME
+export type InstallScope = "auto" | "global" | "project"
+
+function runtimeEnv(): Record<string, string | undefined> {
+  if (typeof Bun !== "undefined") return Bun.env
+  return process.env
+}
+
+export function detectGlobalConfigRoot(): string {
+  const env = runtimeEnv()
+  const xdg = env.XDG_CONFIG_HOME
   if (xdg) return path.join(xdg, "opencode")
 
-  const userProfile = Bun.env.USERPROFILE
+  const userProfile = env.USERPROFILE
   if (userProfile) return path.join(userProfile, ".config", "opencode")
 
-  const home = Bun.env.HOME
+  const home = env.HOME
   if (home) return path.join(home, ".config", "opencode")
 
   // last resort
   return path.resolve(".opencode")
+}
+
+export function detectProjectConfigRoot(worktree: string): string {
+  return path.join(worktree, ".opencode")
+}
+
+export function resolveConfigRoot(params: { worktree: string; scope: InstallScope }): string {
+  if (params.scope === "project") return detectProjectConfigRoot(params.worktree)
+  return detectGlobalConfigRoot()
 }
 
 export function getStateDir(configRoot: string): string {

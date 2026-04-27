@@ -53,6 +53,8 @@ opencode plugin open-quill -g
 
 This installs the package and automatically adds it to your global `opencode.json`. On next startup, Open Quill installs agents into `~/.config/opencode/agents/` and commands into `~/.config/opencode/commands/` (Windows: `%USERPROFILE%\.config\opencode`).
 
+For project-local installation, configure the plugin locally and set `scope: "project"`. On next startup, Open Quill installs agents into `<project>/.opencode/agents/`, commands into `<project>/.opencode/commands/`, and Open Quill state into `<project>/.opencode/.open-quill/`.
+
 ### Options
 
 | Option            | Values                                  | Default        | Description                                                                                                                                        |
@@ -60,6 +62,7 @@ This installs the package and automatically adds it to your global `opencode.jso
 | `installMode`     | `"owned-only"` `"if-missing"` `"force"` | `"owned-only"` | How to handle existing files. `owned-only` updates only files managed by Open Quill; `if-missing` never overwrites; `force` overwrites everything. |
 | `backup`          | `"on-force"` `"always"` `"never"`       | `"on-force"`   | When to create `.bak` backups before overwriting.                                                                                                  |
 | `defaultLanguage` | any language code                       | —              | Default output language for all projects (overridable per-project with `/writing-lang`).                                                           |
+| `scope`           | `"auto"` `"global"` `"project"`         | `"auto"`       | Where Open Quill installs agents/commands and stores its state. `auto` currently falls back to global scope unless `project` is explicitly requested. |
 
 ## Usage
 
@@ -133,6 +136,8 @@ opencode plugin open-quill -g
 
 Команда устанавливает пакет и автоматически добавляет его в глобальный `opencode.json`. При следующем запуске Open Quill установит агентов в `~/.config/opencode/agents/` и команды в `~/.config/opencode/commands/` (Windows: `%USERPROFILE%\.config\opencode`).
 
+Для проектной установки настройте плагин локально и укажите `scope: "project"`. При следующем запуске Open Quill установит агентов в `<project>/.opencode/agents/`, команды в `<project>/.opencode/commands/`, а своё состояние — в `<project>/.opencode/.open-quill/`.
+
 ### Параметры
 
 | Параметр          | Значения                                | По умолчанию   | Описание                                                                                                                                              |
@@ -140,6 +145,7 @@ opencode plugin open-quill -g
 | `installMode`     | `"owned-only"` `"if-missing"` `"force"` | `"owned-only"` | Управление существующими файлами. `owned-only` обновляет только файлы Open Quill; `if-missing` никогда не перезаписывает; `force` перезаписывает всё. |
 | `backup`          | `"on-force"` `"always"` `"never"`       | `"on-force"`   | Когда создавать `.bak`-копии перед перезаписью.                                                                                                       |
 | `defaultLanguage` | любой код языка                         | —              | Язык вывода по умолчанию (переопределяется для конкретного проекта через `/writing-lang`).                                                            |
+| `scope`           | `"auto"` `"global"` `"project"`         | `"auto"`       | Куда Open Quill устанавливает агентов/команды и где хранит своё состояние. `auto` сейчас по умолчанию использует глобальную область, если явно не указан `project`. |
 
 ## Использование
 

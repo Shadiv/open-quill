@@ -5,31 +5,34 @@ import path from "node:path"
 import { ensureDir, fileExists, readText, writeTextAtomic } from "./util/fs.js"
 import { listAssetFiles, readAssetText } from "./util/assets.js"
 import {
-  detectConfigRoot,
   getStateDir,
   loadManifest,
+  resolveConfigRoot,
+  type InstallScope,
   saveManifest,
   type OpenQuillManifest,
   type TemplateRecord,
 } from "./util/state.js"
 import { isOwnedByOpenQuill, stampOwnedFrontmatter } from "./util/ownership.js"
 import { makeTools } from "./tools/index.js"
-import { loadProjectPrefs, saveProjectPrefs, type ProjectPrefs } from "./util/prefs.js"
+import { loadProjectPrefs } from "./util/prefs.js"
 
 type InstallMode = "owned-only" | "if-missing" | "force"
 type BackupMode = "on-force" | "always" | "never"
 
 type Options = {
+  scope?: InstallScope
   installMode?: InstallMode
   backup?: BackupMode
   defaultLanguage?: string
 }
 
-function normalizeOptions(options?: PluginOptions): Required<Pick<Options, "installMode" | "backup">> & {
+function normalizeOptions(options?: PluginOptions): Required<Pick<Options, "scope" | "installMode" | "backup">> & {
   defaultLanguage?: string
 } {
   const o = (options ?? {}) as Options
   return {
+    scope: o.scope ?? "auto",
     installMode: o.installMode ?? "owned-only",
     backup: o.backup ?? "on-force",
     defaultLanguage: o.defaultLanguage,
@@ -143,7 +146,8 @@ async function installTemplates(params: {
 
 export const openQuillServer: Plugin = async (ctx, options) => {
   const o = normalizeOptions(options)
-  const configRoot = detectConfigRoot()
+  const configRoot = resolveConfigRoot({ worktree: ctx.worktree, scope: o.scope })
+  const stateDir = getStateDir(configRoot)
 
   // Load package version (best-effort). If this fails, we still proceed.
   let version = "0.0.0"
@@ -176,7 +180,7 @@ export const openQuillServer: Plugin = async (ctx, options) => {
   // Layers 1+2 leak too much in practice.
 
   const hooks: Hooks = {
-    tool: makeTools({ configRoot }),
+    tool: makeTools({ stateDir }),
 
     // Hard block: refuse built-in read on .docx so the model must use read_manuscript_chunk.
     "tool.execute.before": async (input, output) => {
@@ -224,7 +228,7 @@ export const openQuillServer: Plugin = async (ctx, options) => {
 
     // Enforce per-project language preference at the system layer.
     "experimental.chat.system.transform": async (_input, output) => {
-      const prefs = await loadProjectPrefs(getStateDir(configRoot))
+      const prefs = await loadProjectPrefs(stateDir)
       const lang = prefs.languageByWorktree?.[ctx.worktree] ?? o.defaultLanguage
       if (!lang) return
       output.system.push(
@@ -233,7 +237,7 @@ export const openQuillServer: Plugin = async (ctx, options) => {
     },
 
     "experimental.session.compacting": async (_input, output) => {
-      const prefs = await loadProjectPrefs(getStateDir(configRoot))
+      const prefs = await loadProjectPrefs(stateDir)
       const lang = prefs.languageByWorktree?.[ctx.worktree] ?? o.defaultLanguage
       if (lang) {
         output.context.push(`Open Quill: Project default output language is ${lang}.`) 
@@ -250,7 +254,7 @@ export const openQuillServer: Plugin = async (ctx, options) => {
   // plugin loading completes.
   void (async () => {
     try {
-      await ensureDir(getStateDir(configRoot))
+      await ensureDir(stateDir)
       const result = await installTemplates({ configRoot, options: o, version, client: ctx.client })
       try {
         await ctx.client.app.log({
