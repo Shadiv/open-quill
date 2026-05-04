@@ -24,4 +24,5 @@ Edit the text the user provides (or the file/section they reference in $ARGUMENT
 2. For non-trivial edits (≥ 5 changes), call `@style_checker` to verify the edited text still matches the style profile.
 3. Preserve manuscript language and register in all edits.
 
-Respond in the user's language. Preserve manuscript language in edits.
+### Language
+If a project default output language is set, all output must be in that language. Otherwise respond in the user's language. Preserve manuscript language in edits.

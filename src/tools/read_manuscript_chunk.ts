@@ -8,9 +8,9 @@ import { fileExists } from "../util/fs.js"
 export function makeReadManuscriptChunkTool(params: { stateDir: string }) {
   return tool({
     description:
-      "REQUIRED tool for reading manuscript files (.txt/.md/.mdx/.docx). " +
-      "For .docx (binary ZIP) this is the ONLY way — the built-in read tool will fail. " +
-      "Returns the next chunk of text via a cursor for iterative summarization.",
+      "Reads manuscript files in any format (.txt .md .mdx .docx). " +
+      "This is the ONLY tool that can read .docx (Word) files — the built-in read tool WILL FAIL on them. " +
+      "Returns paginated text via cursor for iterative reading.",
     args: {
       path: tool.schema.string().describe("Path to a manuscript file (relative to session directory or absolute)."),
       cursor: tool.schema.number().int().min(0).optional().describe("Cursor offset (chars). Default 0."),

@@ -1,38 +1,27 @@
 ---
 description: Summarize the manuscript/project
-agent: summarizer
-subtask: true
+agent: writer
 ---
-Summarize the manuscript (or the provided paths: $ARGUMENTS).
 
-## Workflow
-1. Call `scan_manuscripts` to discover all manuscript files.
-2. Order files chronologically when possible (Chapter 1, 2, 3... or Book 1, 2, 3...).
-3. For large manuscripts, use the **Manuscript Reading Loop**: read in chunks via `read_manuscript_chunk`, summarize each chunk, then synthesize.
-4. Extract facts using `extract_canon` to cross-reference your summary against what's in the text.
+## Delegation target: @summarizer
 
-## Output format
-```markdown
-## Overall Summary
-[2-3 paragraph high-level summary of the entire story arc]
+The user wants a manuscript/project summary. Delegate to **@summarizer** with the following instructions.
 
-## Chapter Summaries
-### Chapter N: [Title if available]
-- Key events: [what happens]
-- Characters involved: [who appears]
-- Setting: [where/when]
-- New information: [what the reader learns]
+### Delegation instructions
 
-## Character Status Overview
-- [Character Name]: current state, relationships, unresolved tensions
+1. **Pass scope**: Forward `$ARGUMENTS` to @summarizer as the paths or scope (full manuscript or specific sections).
+2. **Ensure manuscript reading**: @summarizer should:
+   - Call `scan_manuscripts` to discover all manuscript files.
+   - Order files chronologically (Chapter 1, 2, 3... or Book 1, 2, 3...).
+   - For large manuscripts, use the Manuscript Reading Loop: read in chunks via `read_manuscript_chunk`, summarize each chunk, then synthesize.
+   - Extract facts using `extract_canon` to cross-reference the summary against what's in the text.
+3. **Output format**: @summarizer must produce:
+   - Overall Summary (2-3 paragraph high-level summary)
+   - Chapter Summaries (key events, characters involved, setting, new information per chapter)
+   - Character Status Overview (current state, relationships, unresolved tensions)
+   - Open Threads (what is unresolved, where last referenced, chapters involved)
+   - Coverage report (files processed, chapters covered, gaps)
+4. **Do NOT invent** plot details not present in the text.
 
-## Open Threads
-- [Thread description]: what is unresolved, where it was last referenced, chapters involved
-
-## Coverage
-- Files processed: X/Y
-- Chapters covered: [list]
-- Gaps: [any sections not covered]
-```
-
-Use the user's language (English/Russian). Preserve manuscript language in all excerpts.
+### Language
+If a project default output language is set, all output must be in that language. Otherwise detect from manuscript or user input. Preserve manuscript language in all excerpts.

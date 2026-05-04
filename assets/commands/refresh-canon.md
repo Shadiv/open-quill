@@ -1,33 +1,28 @@
 ---
 description: Refresh canon files from latest manuscript
-agent: lorekeeper
-subtask: true
+agent: writer
 ---
-Refresh canon from the manuscript (or provided paths: $ARGUMENTS).
 
-## Workflow
-1. Call `scan_manuscripts` to locate manuscript files.
-2. Use the **Manuscript Reading Loop** for large manuscripts:
-   - Read in chunks via `read_manuscript_chunk`
-   - For each chunk: extract facts with `extract_canon`, classify them, use `canon_merge` to integrate
-   - Update markdown canon files after each chunk
-3. For targeted updates (user specifies chapters), read only those sections.
+## Delegation target: @lorekeeper
 
-## Canon files to update
-- `characters.md` — new characters, updated descriptions, relationship changes, arc progression
-- `locations.md` — new locations, description updates
-- `timeline.md` — new events, chronological ordering
-- `glossary.md` — new terms, slang, in-world vocabulary
-- `world_rules.md` — new rules or rule modifications
-- `continuity_watchlist.md` — flag any contradictions found
+The user wants to refresh/update canon files from the manuscript. Delegate to **@lorekeeper** with the following instructions.
 
-## Character updates
-For main characters: update the full dossier (role, age, appearance, background, current status, personality, relationships, plot function, arc).
-For secondary characters: update the brief description if new information is available.
+### Delegation instructions
 
-## Conflict handling
-- When a contradiction is detected, keep both variants in the canon (labeled as unresolved).
-- Add to `continuity_watchlist.md` with source references.
-- Do NOT silently resolve conflicts — the author decides.
+1. **Pass scope**: Forward `$ARGUMENTS` to @lorekeeper as the paths or scope of the refresh (full manuscript or specific chapters).
+2. **Ensure manuscript reading**: @lorekeeper should:
+   - Call `scan_manuscripts` to locate manuscript files.
+   - Use the Manuscript Reading Loop for large manuscripts: read in chunks via `read_manuscript_chunk`, extract facts with `extract_canon`, classify them, use `canon_merge` to integrate.
+   - For targeted updates, read only the specified sections.
+3. **Canon files to update**: @lorekeeper should update these files:
+   - `characters.md` — new characters, updated descriptions, relationship changes, arc progression
+   - `locations.md` — new locations, description updates
+   - `timeline.md` — new events, chronological ordering
+   - `glossary.md` — new terms, slang, in-world vocabulary
+   - `world_rules.md` — new rules or rule modifications
+   - `continuity_watchlist.md` — flag any contradictions found
+4. **Conflict handling**: When contradictions are detected, keep both variants labeled as unresolved. Add to `continuity_watchlist.md` with source references. Do NOT silently resolve conflicts.
+5. **Ask before editing** any canon file.
 
-Ask before editing any canon file.
+### Language
+If a project default output language is set, all output must be in that language. Otherwise detect from manuscript or user input.

@@ -7,7 +7,7 @@ Prime the project from manuscript files (or the provided paths: $ARGUMENTS).
 
 ## Step 0: Detect language
 
-Call `scan_manuscripts` to locate files, then `read_manuscript_chunk` on a sample to detect the manuscript language. Use that language for all output and created files unless the user has set an explicit language preference via `/writing-lang`.
+Call `scan_manuscripts` to locate files, then `read_manuscript_chunk` on a sample to detect the manuscript language. If a project default output language is set via `/writing-lang`, ALL output MUST be in that language. Otherwise use the detected manuscript language for all output and created files.
 
 ## Step 1: Reading loop
 
@@ -70,4 +70,4 @@ Ask before overwriting any existing files. The following are created/updated:
 
 - Dual canon storage: `canon_merge`/`canon_snapshot` manage the JSON DB (source of truth) and render markdown views. Do NOT edit the markdown files directly — always go through the tools.
 - If `plot.md` exists from prior `@plotter` work, read it for context but do not modify it.
-- Respond in the detected manuscript language. Preserve manuscript language in all edits.
+- If a project default output language is set, all output MUST be in that language. Otherwise respond in the detected manuscript language. Preserve manuscript language in all edits.

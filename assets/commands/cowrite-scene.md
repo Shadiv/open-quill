@@ -1,25 +1,20 @@
 ---
 description: Draft a scene from an approved outline
-agent: cowriter
-subtask: true
+agent: writer
 ---
-Draft the scene using the outline or beats provided in $ARGUMENTS.
 
-## Before drafting
-1. Read `style_profile.md`. If missing, call `@stylematcher` to build it before continuing.
-2. Read relevant canon files: `characters.md` (for characters in the scene), `locations.md` (for setting), `world_rules.md` (for any rules that apply).
-3. Read the most recent chapter or scene before this one using `read_manuscript_chunk` — match tone, rhythm, and voice.
+## Delegation target: @cowriter
 
-## Drafting
-1. Write the scene following the approved outline.
-2. Match the author's style from `style_profile.md`: sentence rhythm, paragraph density, dialogue style, vocabulary level, POV, tense.
-3. Preserve the manuscript language and register exactly.
+The user wants to draft a scene. Delegate to **@cowriter** with the following instructions.
 
-## Quality gates
-After drafting, run the iterative quality loop per your DRAFTING CONTRACT:
-- Call `@style_checker` → must score ≥ 20/25
-- Call `@critic` → must score ≥ 20/25
-- Hard cap: 5 cycles. If not converging, present best draft with remaining concerns.
+### Delegation instructions
 
-## Output
-End with the scoreboard: `Style: <total>/25 · Critique: <total>/25 · <N> cycles`
+1. **Pass the outline/arguments**: Forward `$ARGUMENTS` to @cowriter as the scene specification (outline, beats, or chapter description).
+2. **Pass style context**: Ensure @cowriter reads `style_profile.md` before drafting. If missing, call @stylematcher first to build it.
+3. **Pass canon context**: Ensure @cowriter reads relevant canon files — `characters.md` for characters in the scene, `locations.md` for setting, `world_rules.md` for any rules that apply.
+4. **Pass manuscript context**: Ensure @cowriter reads the most recent chapter or scene before this one using `read_manuscript_chunk` — to match tone, rhythm, and voice.
+5. **Enforce quality loop**: @cowriter MUST run the DRAFTING CONTRACT (style gate via @style_checker ≥ 20/25, critique gate via @critic ≥ 20/25) and end with the scoreboard: `Style: <total>/25 · Critique: <total>/25 · <N> cycles`
+6. **Hard cap**: 5 full critique→style cycles. If not converging, present best draft with remaining concerns.
+
+### Language
+If a project default output language is set, all output must be in that language. Otherwise detect from manuscript or user input. Preserve manuscript language and register in the drafted prose.

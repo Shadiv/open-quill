@@ -232,7 +232,7 @@ export const openQuillServer: Plugin = async (ctx, options) => {
       const lang = prefs.languageByWorktree?.[ctx.worktree] ?? o.defaultLanguage
       if (!lang) return
       output.system.push(
-        `Open Quill: Default output language for this project is \"${lang}\". Respond in this language unless the user explicitly requests otherwise.`,
+        `Open Quill: Default output language for this project is \"${lang}\". ALL output — prose, commentary, file contents, summaries, canon entries, metadata — MUST be in ${lang}. Only exception: direct quotes from manuscript text in another language, and technical tool identifiers. Do NOT translate the manuscript itself — respond in ${lang} ABOUT the manuscript.`,
       )
     },
 
@@ -240,7 +240,7 @@ export const openQuillServer: Plugin = async (ctx, options) => {
       const prefs = await loadProjectPrefs(stateDir)
       const lang = prefs.languageByWorktree?.[ctx.worktree] ?? o.defaultLanguage
       if (lang) {
-        output.context.push(`Open Quill: Project default output language is ${lang}.`) 
+        output.context.push(`Open Quill: Project default output language is ${lang}. ALL output MUST be in ${lang}.`) 
       }
       output.context.push(
         "Open Quill: You are operating in writing mode. Prefer preserving manuscript language and register. Canon/memory files (if present) are project_brief.md, summary.md, glossary.md, characters.md, locations.md, timeline.md, world_rules.md, style_profile.md, continuity_watchlist.md.",

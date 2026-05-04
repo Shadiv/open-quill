@@ -1,29 +1,28 @@
 ---
 description: Critique a chapter (quality + continuity)
-agent: critic
-subtask: true
+agent: writer
 ---
-Critique the chapter provided (or referenced in $ARGUMENTS).
 
-## Context loading
-1. Use `scan_manuscripts` to locate the chapter file.
-2. Read the chapter using `read_manuscript_chunk` (REQUIRED for `.docx` files).
-3. Read canon files: `characters.md`, `locations.md`, `timeline.md`, `world_rules.md`, `continuity_watchlist.md`.
-4. If `style_profile.md` exists, read it for voice/style assessment.
-5. Run `continuity_check` tool with the chapter text and canon notes as an initial pass.
+## Delegation target: @critic
 
-## Critique delivery
-1. **Issues by severity** — CRITICAL (canon contradiction, logic break), MAJOR (weakens scene), MINOR (polish), NOTE (observation).
-2. **Continuity risks** — Flag any contradictions with canon: timeline errors, character state inconsistencies, location errors, world rule violations.
-3. **Rewrite suggestions** — For every CRITICAL and MAJOR issue, provide a concrete rewrite suggestion that addresses the problem.
+The user wants a chapter critique. Delegate to **@critic** with the following instructions.
 
-## Quality check
-Score (1-5) per dimension with one-line justification grounded in a concrete excerpt:
-1. Plot coherence
-2. Character consistency
-3. Continuity / canon
-4. Pacing & structure
-5. Emotional / thematic resonance
+### Delegation instructions
 
-End with: `Critique: <total>/25 — Plot:X Char:X Cont:X Pace:X Reson:X`
-If total < 20 → propose changes and return for rework.
+1. **Pass the target**: Forward `$ARGUMENTS` to @critic as the chapter reference (file path, chapter name, or description).
+2. **Ensure context loading**: @critic should:
+   - Use `scan_manuscripts` to locate the chapter file.
+   - Read the chapter using `read_manuscript_chunk` (REQUIRED for `.docx` files).
+   - Read canon files: `characters.md`, `locations.md`, `timeline.md`, `world_rules.md`, `continuity_watchlist.md`.
+   - If `style_profile.md` exists, read it for voice/style assessment.
+   - Run `continuity_check` as the initial pass.
+3. **Enforce critique protocol**: @critic MUST deliver:
+   - Issues by severity (CRITICAL → MAJOR → MINOR → NOTE)
+   - Continuity risks with specific canon contradictions
+   - Concrete rewrite suggestions for every CRITICAL and MAJOR issue
+   - QUALITY CHECK scores (Plot, Character, Continuity, Pacing, Resonance)
+   - Final scoreboard: `Critique: <total>/25 — Plot:X Char:X Cont:X Pace:X Reson:X`
+4. **If total < 20/25**: @critic should propose changes and return for rework.
+
+### Language
+If a project default output language is set, all output must be in that language. Otherwise detect from manuscript or user input.
