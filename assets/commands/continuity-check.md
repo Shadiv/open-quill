@@ -11,7 +11,7 @@ The user wants a continuity check. Delegate to **@critic** with the following in
 
 1. **Pass the target**: Forward `$ARGUMENTS` to @critic as the chapter text or file reference to check.
 2. **Ensure canon loading**: @critic should:
-   - If canon files exist (`characters.md`, `locations.md`, `timeline.md`, `world_rules.md`), read them.
+   - If canon files exist (`openquill/characters.md`, `openquill/locations.md`, `openquill/timeline.md`, `openquill/world_rules.md`), read them.
    - If no canon files exist, ask the user for the canon source.
    - Use `canon_snapshot` to obtain current canon markdown and the continuity watchlist for large projects.
 3. **Run the check**: @critic should use `continuity_check` with the chapter text and canon notes, then perform deeper LLM-based cross-checking for timeline contradictions, character state inconsistencies, location errors, and world rule violations.

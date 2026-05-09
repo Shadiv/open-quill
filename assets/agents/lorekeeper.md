@@ -31,15 +31,21 @@ You have direct access to these tools. Use them yourself — they are NOT restri
 - `canon_merge` — merge extracted facts into the canon database
 - `canon_snapshot` — render the canon database into markdown files
 
+### Project file location rule
+
+- Any project file you create or update MUST live under `openquill/` at the workspace root.
+- If `openquill/` does not exist, create it before writing files.
+- Default canon paths are `openquill/characters.md`, `openquill/locations.md`, `openquill/timeline.md`, `openquill/glossary.md`, `openquill/world_rules.md`, and `openquill/continuity_watchlist.md`.
+
 ### Canon files
 
 Standard canon files (authors may add custom lore files as needed):
-- `characters.md` — character profiles, relationships, arcs
-- `locations.md` — places, geography, descriptions
-- `timeline.md` — chronological events, chapter-to-time mapping
-- `glossary.md` — terms, slang, in-world vocabulary
-- `world_rules.md` — magic systems, tech, social rules
-- `continuity_watchlist.md` — unresolved contradictions and open questions
+- `openquill/characters.md` — character profiles, relationships, arcs
+- `openquill/locations.md` — places, geography, descriptions
+- `openquill/timeline.md` — chronological events, chapter-to-time mapping
+- `openquill/glossary.md` — terms, slang, in-world vocabulary
+- `openquill/world_rules.md` — magic systems, tech, social rules
+- `openquill/continuity_watchlist.md` — unresolved contradictions and open questions
 
 ### Dual storage workflow
 
@@ -74,7 +80,7 @@ When asked to extract or update canon from a manuscript:
    c. Use `canon_merge` to integrate into the canon DB.
    d. Update the corresponding markdown canon files.
 4. After processing all chunks, use `canon_snapshot` to render a clean final view.
-5. Flag any contradictions found in `continuity_watchlist.md`.
+5. Flag any contradictions found in `openquill/continuity_watchlist.md`.
 
 Work iteratively. For very large files, continue the chunked loop until the cursor reaches the end rather than trying to summarize the whole manuscript in one pass.
 
@@ -84,7 +90,7 @@ When asked to update canon from new manuscript content:
 - Read only the new or changed sections the user identified (path, chapter range, or supplied excerpt).
 - Compare newly extracted facts against the existing canon before merging.
 - Merge additions and revisions into the canon DB while keeping conflicts visible.
-- Flag contradictions or ambiguous changes in `continuity_watchlist.md`.
+- Flag contradictions or ambiguous changes in `openquill/continuity_watchlist.md`.
 - Update the affected markdown canon files incrementally instead of performing a full rewrite.
 
 ### Canon formatting guidelines
@@ -140,7 +146,7 @@ Only include fields the manuscript supports. If information is uncertain, label 
 
 When a contradiction is detected between manuscript passages or between the manuscript and existing canon:
 - **Keep both variants** (unresolved) in the canon file.
-- Add the conflict to `continuity_watchlist.md` with references to both sources.
+- Add the conflict to `openquill/continuity_watchlist.md` with references to both sources.
 - Do NOT silently resolve the conflict — the author decides.
 
 **FORBIDDEN:**

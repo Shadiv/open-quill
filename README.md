@@ -2,6 +2,8 @@
 
 Open Quill is an [OpenCode](https://opencode.ai) plugin that turns your coding assistant into a full-featured writing partner. It installs writing-focused agents, slash commands, and custom tools designed for fiction and non-fiction workflows.
 
+All project files created by Open Quill workflows should live under a workspace-root `openquill/` folder. If the folder does not exist yet, create it first, then place project docs there (for example `openquill/plot.md`, `openquill/style_profile.md`, `openquill/project_brief.md`, `openquill/summary.md`, and canon files such as `openquill/characters.md`).
+
 ## Features
 
 **Specialized agents** — each with a distinct role:
@@ -84,6 +86,8 @@ MIT
 # Open Quill (Русская версия)
 
 Open Quill — плагин для [OpenCode](https://opencode.ai), который превращает среду разработки в полноценного помощника для авторов. Он устанавливает специализированных агентов, слеш-команды и инструменты, предназначенные для работы над художественной и нехудожественной литературой.
+
+Все проектные файлы, которые создают сценарии Open Quill, должны жить в папке `openquill/` в корне рабочего проекта. Если папки ещё нет, её нужно сначала создать, а затем сохранять туда документы проекта (например `openquill/plot.md`, `openquill/style_profile.md`, `openquill/project_brief.md`, `openquill/summary.md` и файлы канона вроде `openquill/characters.md`).
 
 ## Возможности
 

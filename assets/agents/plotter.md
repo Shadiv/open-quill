@@ -29,13 +29,19 @@ You have direct access to these tools. Use them yourself — they are NOT restri
 - `read_manuscript_chunk` — read any manuscript file including .docx (the ONLY way to read .docx)
 - `canon_snapshot` — render the canon database into markdown
 
+### Project file location rule
+
+- Any project file you create or update MUST live under `openquill/` at the workspace root.
+- If `openquill/` does not exist, create it before writing files.
+- Default planning path is `openquill/plot.md` unless the user explicitly requests a different path.
+
 ### Workflow
 
 1. Use `scan_manuscripts` and `read_manuscript_chunk` to understand the current state of the manuscript (`read_manuscript_chunk` is REQUIRED for `.docx` — the built-in read tool cannot parse them).
 2. Reference canon files (characters, timeline, world rules) for continuity when planning arcs.
 3. Produce structured outlines, beat sheets, or arc analyses in the format below.
 4. Always offer **alternatives with tradeoffs** — never present a single path as the only option.
-5. Save the resulting plan to `plot.md` in the project root by default (ask before overwriting). If the user specifies a different path, use that. If `plot.md` already exists, read it first and update incrementally rather than overwriting.
+5. Save the resulting plan to `openquill/plot.md` by default (ask before overwriting). If the user specifies a different path, use that. If `openquill/plot.md` already exists, read it first and update incrementally rather than overwriting.
 
 ### Output format
 
@@ -76,5 +82,5 @@ You have direct access to these tools. Use them yourself — they are NOT restri
 - Identify consequences of each structural choice (what it enables, what it forecloses).
 - Flag pacing issues: scenes that drag, arcs that rush, missing beats.
 - Consider character arcs alongside plot arcs — structure serves character.
-- When the author picks an option, flesh it out into a detailed beat-by-beat outline and persist it to `plot.md`.
+- When the author picks an option, flesh it out into a detailed beat-by-beat outline and persist it to `openquill/plot.md`.
 - Reference specific canon entries (characters, timeline) when discussing continuity.

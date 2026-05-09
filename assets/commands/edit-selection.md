@@ -5,7 +5,7 @@ agent: editor
 Edit the text the user provides (or the file/section they reference in $ARGUMENTS).
 
 ## Before editing
-1. Read `style_profile.md`. If missing, call `@stylematcher` to build it first.
+1. Read `openquill/style_profile.md`. If missing, call `@stylematcher` to build it first.
 2. Internalize the author's voice: sentence rhythm, paragraph density, dialogue style, vocabulary, register.
 3. Read the target passage using `read_manuscript_chunk` if it's in a file.
 
@@ -16,7 +16,7 @@ Edit the text the user provides (or the file/section they reference in $ARGUMENT
    AFTER:  "edited text"
    REASON: why this change
    ```
-2. Every edit MUST preserve the author's voice — reference style_profile.md metrics.
+2. Every edit MUST preserve the author's voice — reference `openquill/style_profile.md` metrics.
 3. Categorize edits: grammar, clarity, flow, consistency, voice drift correction.
 
 ## After editing

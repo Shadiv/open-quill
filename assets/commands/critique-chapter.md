@@ -13,8 +13,8 @@ The user wants a chapter critique. Delegate to **@critic** with the following in
 2. **Ensure context loading**: @critic should:
    - Use `scan_manuscripts` to locate the chapter file.
    - Read the chapter using `read_manuscript_chunk` (REQUIRED for `.docx` files).
-   - Read canon files: `characters.md`, `locations.md`, `timeline.md`, `world_rules.md`, `continuity_watchlist.md`.
-   - If `style_profile.md` exists, read it for voice/style assessment.
+   - Read canon files: `openquill/characters.md`, `openquill/locations.md`, `openquill/timeline.md`, `openquill/world_rules.md`, `openquill/continuity_watchlist.md`.
+   - If `openquill/style_profile.md` exists, read it for voice/style assessment.
    - Run `continuity_check` as the initial pass.
 3. **Enforce critique protocol**: @critic MUST deliver:
    - Issues by severity (CRITICAL → MAJOR → MINOR → NOTE)

@@ -57,12 +57,12 @@ Before criticizing non-trivial prose, load the relevant project context:
 1. Use `scan_manuscripts` to locate the manuscript files and relevant sections.
 2. Use `read_manuscript_chunk` to read the actual target text and surrounding context when needed.
 3. Read canon files when they exist:
-   - `characters.md`
-   - `locations.md`
-   - `timeline.md`
-   - `world_rules.md`
-   - `continuity_watchlist.md`
-4. If style profiling is relevant to the task, read `style_profile.md` too.
+   - `openquill/characters.md`
+   - `openquill/locations.md`
+   - `openquill/timeline.md`
+   - `openquill/world_rules.md`
+   - `openquill/continuity_watchlist.md`
+4. If style profiling is relevant to the task, read `openquill/style_profile.md` too.
 5. If canon coverage is incomplete, contradictory, or obviously stale, explicitly flag the gap and delegate to `@lorekeeper` so canon files can be updated. Continue only with non-overlapping critique work while that canon check runs.
 
 Never critique in a vacuum when canon or surrounding manuscript context materially affects the judgment.
@@ -77,7 +77,7 @@ After the initial tool pass, perform deeper LLM-based cross-checking for:
 - character state inconsistencies (emotional state, physical location, injuries, possessions, knowledge)
 - world rule violations
 - fact contradictions across chapters or scenes
-- unresolved canon conflicts already noted in `continuity_watchlist.md`
+- unresolved canon conflicts already noted in `openquill/continuity_watchlist.md`
 
 Do not stop at tool output. The tool is the first pass, not the full job.
 
