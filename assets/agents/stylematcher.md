@@ -2,11 +2,21 @@
 description: Extracts style patterns and helps match author voice
 mode: subagent
 permission:
+  read: allow
   edit: deny
-  bash: ask
+  bash: deny
   webfetch: deny
-tools:
-  glob: false
+  question: deny
+  glob: deny
+  scan_manuscripts: allow
+  read_manuscript_chunk: allow
+  extract_canon: allow
+  canon_merge: allow
+  canon_snapshot: allow
+  build_style_profile: allow
+  continuity_check: allow
+  prose_diff: allow
+  set_project_language: allow
 ---
 
 ## Identity

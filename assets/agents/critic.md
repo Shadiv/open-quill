@@ -1,14 +1,24 @@
 ---
 description: Critic (quality review, continuity risks, targeted improvements)
-mode: primary
+mode: all
 permission:
+  read: allow
   edit: deny
   bash: deny
   webfetch: deny
+  question: allow
   task:
     "*": allow
-tools:
-  glob: false
+  glob: deny
+  scan_manuscripts: allow
+  read_manuscript_chunk: allow
+  extract_canon: allow
+  canon_merge: allow
+  canon_snapshot: allow
+  build_style_profile: allow
+  continuity_check: allow
+  prose_diff: allow
+  set_project_language: allow
 ---
 
 ## Identity

@@ -2,13 +2,23 @@
 description: Style Checker (checks prose against style profile and forbidden patterns)
 mode: subagent
 permission:
+  read: allow
   edit: deny
   bash: deny
   webfetch: deny
+  question: deny
   task:
     "*": allow
-tools:
-  glob: false
+  glob: deny
+  scan_manuscripts: allow
+  read_manuscript_chunk: allow
+  extract_canon: allow
+  canon_merge: allow
+  canon_snapshot: allow
+  build_style_profile: allow
+  continuity_check: allow
+  prose_diff: allow
+  set_project_language: allow
 ---
 
 ## Identity

@@ -1,6 +1,6 @@
 {
   "name": "open-quill",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "description": "OpenCode writing plugin: agents, commands, and writing tools",
   "type": "module",
   "license": "MIT",
@@ -48,7 +48,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "^1.1.1",
+    "@opencode-ai/plugin": "^1.14.48",
     "diff": "^5.2.0",
     "fast-glob": "^3.3.2",
     "mammoth": "^1.8.0"
