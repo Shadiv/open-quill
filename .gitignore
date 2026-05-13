@@ -3,7 +3,7 @@ node_modules/
 .ralph/
 .claude/
 .sysyphos/
-.omc
+.omc/*
 .DS_Store
 .env
 .env.*
