@@ -2,9 +2,11 @@
 description: Planning agent (beats, arcs, pacing) without writing full prose
 mode: subagent
 permission:
+  read: allow
   edit: ask
   bash: deny
   webfetch: deny
+  question: allow
   glob: deny
   scan_manuscripts: allow
   read_manuscript_chunk: allow

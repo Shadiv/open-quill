@@ -2,9 +2,11 @@
 description: Conservative editor (line edits, clarity, consistency)
 mode: primary
 permission:
+  read: allow
   edit: ask
   bash: deny
   webfetch: ask
+  question: allow
   task:
     "*": allow
   glob: deny

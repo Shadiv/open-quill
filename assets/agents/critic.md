@@ -1,10 +1,12 @@
 ---
 description: Critic (quality review, continuity risks, targeted improvements)
-mode: primary
+mode: all
 permission:
+  read: allow
   edit: deny
   bash: deny
   webfetch: deny
+  question: allow
   task:
     "*": allow
   glob: deny

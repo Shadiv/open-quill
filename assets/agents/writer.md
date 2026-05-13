@@ -2,9 +2,11 @@
 description: Primary writing agent (drafting, brainstorming, scene work)
 mode: primary
 permission:
+  read: allow
   edit: ask
   bash: deny
   webfetch: ask
+  question: allow
   task:
     "*": allow
   glob: deny

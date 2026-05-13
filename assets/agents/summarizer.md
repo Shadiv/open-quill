@@ -2,9 +2,11 @@
 description: Summarizes manuscripts/chapters and extracts current story state
 mode: subagent
 permission:
+  read: allow
   edit: deny
   bash: deny
   webfetch: deny
+  question: deny
   glob: deny
   scan_manuscripts: allow
   read_manuscript_chunk: allow

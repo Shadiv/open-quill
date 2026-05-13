@@ -2,9 +2,11 @@
 description: Extracts style patterns and helps match author voice
 mode: subagent
 permission:
+  read: allow
   edit: deny
-  bash: ask
+  bash: deny
   webfetch: deny
+  question: deny
   glob: deny
   scan_manuscripts: allow
   read_manuscript_chunk: allow

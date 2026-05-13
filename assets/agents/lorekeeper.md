@@ -2,9 +2,11 @@
 description: Maintains canon files (characters, locations, timeline, glossary)
 mode: subagent
 permission:
+  read: allow
   edit: ask
   bash: deny
   webfetch: deny
+  question: allow
   glob: deny
   scan_manuscripts: allow
   read_manuscript_chunk: allow

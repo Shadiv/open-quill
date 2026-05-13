@@ -201,6 +201,15 @@ export const openQuillServer: Plugin = async (ctx, options) => {
       sessionAgent.set(input.sessionID, input.agent)
     },
 
+    // Release tracked agent state when a session is deleted by the user.
+    event: async ({ event }) => {
+      const ev = event as { type?: string; properties?: { sessionID?: string } }
+      if (ev.type === "session.deleted") {
+        const sessionID = ev.properties?.sessionID
+        if (sessionID) sessionAgent.delete(sessionID)
+      }
+    },
+
     // Layer 2: detect long-form prose from writer/cowriter that's missing the loop scoreboard.
     // Append a self-correcting reminder so the next turn re-runs the gates.
     "experimental.text.complete": async (input, output) => {

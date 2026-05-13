@@ -2,9 +2,11 @@
 description: Cowriter (drafts scenes/chapters from an approved plan)
 mode: subagent
 permission:
+  read: allow
   edit: ask
   bash: deny
   webfetch: deny
+  question: allow
   task:
     "*": allow
   glob: deny

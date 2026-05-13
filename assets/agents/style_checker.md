@@ -2,9 +2,11 @@
 description: Style Checker (checks prose against style profile and forbidden patterns)
 mode: subagent
 permission:
+  read: allow
   edit: deny
   bash: deny
   webfetch: deny
+  question: deny
   task:
     "*": allow
   glob: deny
