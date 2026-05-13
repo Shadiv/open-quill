@@ -5,8 +5,16 @@ permission:
   edit: deny
   bash: ask
   webfetch: deny
-tools:
-  glob: false
+  glob: deny
+  scan_manuscripts: allow
+  read_manuscript_chunk: allow
+  extract_canon: allow
+  canon_merge: allow
+  canon_snapshot: allow
+  build_style_profile: allow
+  continuity_check: allow
+  prose_diff: allow
+  set_project_language: allow
 ---
 
 ## Identity
